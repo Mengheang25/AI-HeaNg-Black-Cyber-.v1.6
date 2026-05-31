@@ -1,0 +1,16 @@
+{
+  "name": "heang-black-cyber-ai",
+  "version": "1.5.0",
+  "description": "HeaNg[Black-Cyber] AI Chat Interface with Security",
+  "main": "index.html",
+  "scripts": {
+    "dev": "serve .",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": ["ai", "chat", "openrouter", "cyberpunk", "security"],
+  "author": "HeaNg",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}
