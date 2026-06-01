@@ -309,12 +309,32 @@
     <!-- ================================ -->
     <!-- SECURITY SYSTEM - LOADED FIRST -->
     <!-- ================================ -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://*;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://* wss://*; media-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Expires" content="0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="format-detection" content="email=no">
+    
+    <!-- Additional Security Features -->
+    <script>
+        // Prevent clickjacking
+        if (window.self !== window.top) {
+            window.top.location = window.self.location;
+        }
+        
+        // Detect tamper attempts
+        window.__INITIAL_INTEGRITY_CHECK__ = {
+            location: window.location.href,
+            timestamp: Date.now(),
+            nonce: Math.random().toString(36).substring(2, 15),
+        };
+    </script>
     
     <script src="public/security.js" defer></script>
 </head>
@@ -635,6 +655,7 @@
     function removeTypingIndicator() { document.getElementById('ai-typing')?.remove(); }
     
     async function streamAI(userMsg, targetBubble, fileMetaHistory) {
+        console.log('streamAI called with message:', userMsg.slice(0, 50));
         if(!conversationHistory.length || conversationHistory[0]?.role !== 'system') conversationHistory.unshift({ role: 'system', content: systemPromptCache });
         conversationHistory.push({ role: 'user', content: userMsg });
         let session = allSessions.find(s => s.id === currentSessionId);
@@ -647,10 +668,24 @@
         renderRecentList();
         
         try {
+            // Get security tokens
+            const sessionToken = sessionStorage.getItem('heang_session_token');
+            const fingerprint = window.Security?.getFingerprint?.()?.userAgent || navigator.userAgent;
+            
             const resp = await fetch(OPENROUTER_ENDPOINT, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model: MODEL_NAME, messages: conversationHistory.map(m => ({ role: m.role, content: m.content })), temperature: 0.75, stream: true })
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'X-Session-Token': sessionToken || '',
+                    'X-Client-Fingerprint': fingerprint || '',
+                },
+                body: JSON.stringify({
+                    model: MODEL_NAME,
+                    messages: conversationHistory.map(m => ({ role: m.role, content: m.content })),
+                    temperature: 0.75,
+                    stream: true
+                })
             });
             
             // Better error handling
@@ -788,10 +823,29 @@
     }
     
     async function sendMessage() {
+        console.log('sendMessage called');
+        
+        // Security checks
+        if(window.Security && window.Security.isLocked && window.Security.isLocked()) {
+            showToast('🔒 Session is locked. Please refresh the page.', true);
+            return;
+        }
+        
+        if(window.Security && !window.Security.checkRateLimit()) {
+            showToast('⚠️ Too many requests. Please wait.', true);
+            return;
+        }
+        
+        if(window.Security && !window.Security.checkApiRateLimit()) {
+            showToast('⚠️ API rate limit exceeded. Please wait.', true);
+            return;
+        }
+        
         if(isStreaming) { showToast("Waiting...", true); return; }
         let rawMsg = chatInput.value.trim();
         const hasFile = activeFile !== null;
-        if(!rawMsg && !hasFile) return;
+        console.log('Message:', rawMsg ? rawMsg.slice(0, 30) : '(empty)', 'HasFile:', hasFile);
+        if(!rawMsg && !hasFile) { console.log('Empty message, returning'); return; }
         isStreaming = true;
         let userDisplayMsg = rawMsg || "📎 Check file";
         let apiMsg = rawMsg;
@@ -892,21 +946,52 @@
     async function fetchSystemPrompt() { try { const res = await fetch('public/system_prompt.txt?nocache='+Date.now()); if(res.ok) systemPromptCache = await res.text(); } catch(e) {} }
     
     (async function boot() {
-        // Check authentication first
-        const user = checkAuth();
-        if (!user) return;
-        
-        // Update user information in sidebar
-        updateUserInfo();
-        
-        await fetchSystemPrompt();
-        if(!currentSessionId || !allSessions.find(s=>s.id===currentSessionId)) createNewChatSession();
-        else loadSession(currentSessionId);
-        if(isDark) toggleDarkMode();
-        updateSendButtonState();
-        chatInput.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-        chatInput.addEventListener('input', updateSendButtonState);
-        chatInput.addEventListener('focus', () => { setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); });
+        try {
+            // Check authentication first
+            const user = checkAuth();
+            if (!user) return;
+            
+            console.log('✓ User authenticated:', user.email);
+            
+            // Update user information in sidebar
+            updateUserInfo();
+            
+            await fetchSystemPrompt();
+            console.log('✓ System prompt loaded');
+            
+            if(!currentSessionId || !allSessions.find(s=>s.id===currentSessionId)) createNewChatSession();
+            else loadSession(currentSessionId);
+            
+            if(isDark) toggleDarkMode();
+            updateSendButtonState();
+            
+            // Attach event listeners with error handling
+            if(chatInput) {
+                chatInput.addEventListener('keydown', (e) => { 
+                    if(e.key === 'Enter' && !e.shiftKey) { 
+                        e.preventDefault(); 
+                        sendMessage(); 
+                    } 
+                });
+                chatInput.addEventListener('input', updateSendButtonState);
+                chatInput.addEventListener('focus', () => { setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); });
+                console.log('✓ Event listeners attached');
+            } else {
+                console.error('❌ Chat input element not found!');
+            }
+            
+            // Verify send button is clickable
+            if(sendBtn) {
+                console.log('✓ Send button ready');
+            } else {
+                console.error('❌ Send button element not found!');
+            }
+            
+            console.log('✓ Boot complete - Ready to chat');
+        } catch(err) {
+            console.error('Boot error:', err);
+            showToast('System initialization error: ' + err.message, true);
+        }
     })();
 </script>
 </body>

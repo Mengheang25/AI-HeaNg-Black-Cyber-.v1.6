@@ -1,588 +1,604 @@
-// ==========================================
-// HeaNg[Black-Cyber] - Advanced Security System
-// ==========================================
+/**
+ * =============================================
+ * HEANG[BLACK-CYBER] V1.5 - ADVANCED SECURITY
+ * =============================================
+ * Comprehensive protection against:
+ * - DDoS attacks
+ * - Spam/brute force
+ * - Developer tools access
+ * - Session hijacking
+ * - Malicious scripts
+ * - XSS attacks
+ * - CSRF attacks
+ * - Bot attacks
+ */
 
 (function() {
-  'use strict';
+    'use strict';
 
-  const SecuritySystem = {
-    // ==================== Configuration ====================
-    config: {
-      enableF12Protection: true,
-      enableInspectProtection: true,
-      enableContextMenuProtection: true,
-      enableSourceMapProtection: true,
-      enableDebuggerProtection: true,
-      maxRequestsPerMinute: 20,
-      maxMessagesPerHour: 100,
-      spamDetectionEnabled: true,
-      enableUserAgentValidation: true,
-      enableXSSProtection: true,
-      enableCSRFProtection: true,
-    },
+    // ==================== CONFIGURATION ====================
+    const CONFIG = {
+        MAX_REQUESTS_PER_MINUTE: 30,
+        MAX_API_CALLS_PER_HOUR: 100,
+        SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
+        SUSPICIOUS_ACTIVITY_THRESHOLD: 5,
+        LOCK_DURATION: 15 * 60 * 1000, // 15 minutes
+        BLOCK_DURATION: 60 * 60 * 1000, // 1 hour
+    };
 
-    // ==================== Initialization ====================
-    init: function() {
-      console.log('%c🛡️ HeaNg Security System Initialized', 'color: #00ff00; font-weight: bold; font-size: 14px;');
-      
-      this.blockDeveloperTools();
-      this.blockContextMenu();
-      this.preventSourceMapExposure();
-      this.implementSpamProtection();
-      this.implementInputValidation();
-      this.implementXSSProtection();
-      this.implementCSRFProtection();
-      this.setupSecurityHeaders();
-      this.monitorSuspiciousActivity();
-      this.disableDangerousMethods();
-      this.protectConsole();
-      this.setupSecurityListeners();
-    },
+    // ==================== STATE MANAGEMENT ====================
+    const STATE = {
+        requestCount: 0,
+        requestTimestamps: [],
+        apiCallTimestamps: [],
+        suspiciousActivityCount: 0,
+        lastActivityTime: Date.now(),
+        isLocked: false,
+        isBlocked: false,
+        sessionStartTime: Date.now(),
+        devToolsDetected: 0,
+        failedAttempts: 0,
+        ipInfo: null,
+        fingerprint: generateFingerprint(),
+    };
 
-    // ==================== F12 & Developer Tools Protection ====================
-    blockDeveloperTools: function() {
-      // Block F12 key
-      document.addEventListener('keydown', (e) => {
-        // F12
-        if (e.keyCode === 123 || e.key === 'F12') {
-          e.preventDefault();
-          e.stopPropagation();
-          this.triggerSecurityAlert('Attempt to open Developer Tools blocked');
-          return false;
-        }
-
-        // Ctrl+Shift+I (Inspect Element)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.keyCode === 73) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.triggerSecurityAlert('Inspect Element blocked');
-          return false;
-        }
-
-        // Ctrl+Shift+C (Inspect Element - alternate)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.keyCode === 67) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.triggerSecurityAlert('Inspect Element blocked');
-          return false;
-        }
-
-        // Ctrl+Shift+J (Console)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.keyCode === 74) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.triggerSecurityAlert('Console access blocked');
-          return false;
-        }
-
-        // Ctrl+Shift+K (Console - alternate)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.keyCode === 75) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.triggerSecurityAlert('Console access blocked');
-          return false;
-        }
-
-        // Ctrl+I (Inspector)
-        if ((e.ctrlKey || e.metaKey) && e.keyCode === 73) {
-          e.preventDefault();
-          e.stopPropagation();
-          this.triggerSecurityAlert('Inspector blocked');
-          return false;
-        }
-
-        // Ctrl+S (Save)
-        if ((e.ctrlKey || e.metaKey) && e.keyCode === 83) {
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
-        }
-      }, true);
-
-      // Detect DevTools opening via window size
-      let devtools = { open: false };
-      const threshold = 160;
-      
-      setInterval(() => {
-        if (window.outerHeight - window.innerHeight > threshold ||
-            window.outerWidth - window.innerWidth > threshold) {
-          if (!devtools.open) {
-            devtools.open = true;
-            this.triggerSecurityAlert('Developer Tools detected and blocked');
-            this.closeDevTools();
-          }
-        } else {
-          devtools.open = false;
-        }
-      }, 500);
-
-      // Debugger check
-      const checkDebugger = () => {
-        const before = new Date();
-        debugger;
-        const after = new Date();
-        if (after - before > 100) {
-          this.triggerSecurityAlert('Debugger detected');
-          this.closeDevTools();
-        }
-      };
-      
-      if (!this.isInProduction()) {
-        setTimeout(() => checkDebugger(), 1000);
-      }
-    },
-
-    // ==================== Context Menu Protection ====================
-    blockContextMenu: function() {
-      document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.triggerSecurityAlert('Right-click disabled');
-        return false;
-      }, true);
-
-      // Disable mouse right-click
-      document.onmousedown = (e) => {
-        if (e.button === 2) {
-          this.triggerSecurityAlert('Right-click attempt blocked');
-          return false;
-        }
-      };
-    },
-
-    // ==================== Source Map & Debug Protection ====================
-    preventSourceMapExposure: function() {
-      // Remove source maps references
-      const scripts = document.querySelectorAll('script');
-      scripts.forEach(script => {
-        if (script.src && (script.src.includes('.map') || script.textContent.includes('sourceMap'))) {
-          script.remove();
-        }
-      });
-
-      // Prevent source map access
-      const originalFetch = window.fetch;
-      window.fetch = function(...args) {
-        const [resource] = args;
-        if (typeof resource === 'string' && resource.includes('.map')) {
-          console.warn('Source map access blocked');
-          return Promise.reject(new Error('Resource blocked'));
-        }
-        return originalFetch.apply(this, args);
-      };
-    },
-
-    // ==================== Spam & Rate Limiting ====================
-    spamData: {
-      requests: [],
-      messages: [],
-      ips: new Map(),
-    },
-
-    implementSpamProtection: function() {
-      // Message rate limiting
-      window.checkSpamLimit = (maxPerHour = 100) => {
-        const now = Date.now();
-        const oneHourAgo = now - (60 * 60 * 1000);
+    // ==================== FINGERPRINTING ====================
+    function generateFingerprint() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#f60';
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = '#069';
+        ctx.fillText('Browser Fingerprint', 2, 15);
         
-        // Clean old entries
-        this.spamData.messages = this.spamData.messages.filter(time => time > oneHourAgo);
-        
-        if (this.spamData.messages.length >= maxPerHour) {
-          this.triggerSecurityAlert('Message rate limit exceeded');
-          return false;
-        }
-        
-        this.spamData.messages.push(now);
-        return true;
-      };
-
-      // Request rate limiting
-      window.checkRequestLimit = (maxPerMinute = 20) => {
-        const now = Date.now();
-        const oneMinuteAgo = now - (60 * 1000);
-        
-        // Clean old entries
-        this.spamData.requests = this.spamData.requests.filter(time => time > oneMinuteAgo);
-        
-        if (this.spamData.requests.length >= maxPerMinute) {
-          this.triggerSecurityAlert('Request rate limit exceeded');
-          return false;
-        }
-        
-        this.spamData.requests.push(now);
-        return true;
-      };
-
-      // Spam pattern detection
-      window.detectSpamPatterns = (content) => {
-        if (!content || typeof content !== 'string') return false;
-
-        const patterns = [
-          /(.)\1{20,}/gi,                  // Repeated characters (20+)
-          /(http|https):\/\/.*?(http|https):\/\//gi,  // Multiple URLs
-          /[^a-zA-Z0-9\s]{30,}/gi,        // Excessive special characters
-          /(\b\w+\b)(\s+\1){10,}/gi,      // Repeated words (10+)
-          /\b(buy|click|free|win|prize|congratulations)\b/gi,  // Spam keywords (check quantity)
-        ];
-
-        let spamScore = 0;
-        patterns.forEach(pattern => {
-          const matches = content.match(pattern);
-          if (matches) spamScore += matches.length;
-        });
-
-        // Spam if score > 5
-        return spamScore > 5;
-      };
-    },
-
-    // ==================== Input Validation & Sanitization ====================
-    implementInputValidation: function() {
-      window.validateInput = (input) => {
-        if (typeof input !== 'string') return false;
-        
-        // Length check
-        if (input.length > 10000) {
-          this.triggerSecurityAlert('Input exceeds maximum length');
-          return false;
-        }
-
-        // Spam check
-        if (this.detectSpamPatterns(input)) {
-          this.triggerSecurityAlert('Spam pattern detected');
-          return false;
-        }
-
-        // Rate limit check
-        if (!window.checkSpamLimit()) {
-          return false;
-        }
-
-        return true;
-      };
-
-      // Sanitize HTML/Script content
-      window.sanitizeInput = (input) => {
-        if (typeof input !== 'string') return '';
-        
-        const div = document.createElement('div');
-        div.textContent = input;
-        let sanitized = div.innerHTML;
-
-        // Remove dangerous protocols
-        sanitized = sanitized.replace(/javascript:/gi, '')
-                             .replace(/on\w+\s*=/gi, '')
-                             .replace(/<script[^>]*>.*?<\/script>/gi, '');
-
-        return sanitized;
-      };
-    },
-
-    // ==================== XSS Protection ====================
-    implementXSSProtection: function() {
-      // Content Security Policy (already in meta tag, but enhanced here)
-      const meta = document.createElement('meta');
-      meta.httpEquiv = 'Content-Security-Policy';
-      meta.content = "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:;";
-      document.head.appendChild(meta);
-
-      // Escape HTML special characters
-      window.escapeHTML = (text) => {
-        const map = {
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#039;'
+        return {
+            userAgent: navigator.userAgent,
+            language: navigator.language,
+            screenResolution: `${window.screen.width}x${window.screen.height}`,
+            colorDepth: window.screen.colorDepth,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            canvasSignature: canvas.toDataURL(),
+            timestamp: Date.now(),
         };
-        return text.replace(/[&<>"']/g, m => map[m]);
-      };
-
-      // Safe DOM manipulation
-      window.safeSetHTML = (element, html) => {
-        if (!element) return;
-        element.textContent = '';
-        const temp = document.createElement('div');
-        temp.innerHTML = html;
-        
-        // Only allow safe elements
-        const allowedTags = ['p', 'div', 'span', 'strong', 'em', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
-        const walker = document.createTreeWalker(
-          temp,
-          NodeFilter.SHOW_ELEMENT,
-          null,
-          false
-        );
-
-        let node;
-        while (node = walker.nextNode()) {
-          if (!allowedTags.includes(node.tagName.toLowerCase())) {
-            node.remove();
-          }
-        }
-
-        element.appendChild(temp);
-      };
-    },
-
-    // ==================== CSRF Protection ====================
-    implementCSRFProtection: function() {
-      // Generate CSRF token
-      window.generateCSRFToken = () => {
-        const token = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-          .map(b => b.toString(16).padStart(2, '0'))
-          .join('');
-        sessionStorage.setItem('csrf_token', token);
-        return token;
-      };
-
-      // Verify CSRF token
-      window.verifyCSRFToken = (token) => {
-        const stored = sessionStorage.getItem('csrf_token');
-        return token === stored;
-      };
-
-      // Initialize CSRF token
-      if (!sessionStorage.getItem('csrf_token')) {
-        window.generateCSRFToken();
-      }
-    },
-
-    // ==================== Security Headers ====================
-    setupSecurityHeaders: function() {
-      const headers = {
-        'X-Content-Type-Options': 'nosniff',
-        'X-Frame-Options': 'SAMEORIGIN',
-        'X-XSS-Protection': '1; mode=block',
-        'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-        'Referrer-Policy': 'strict-origin-when-cross-origin',
-      };
-
-      // Apply headers via fetch interceptor
-      const originalFetch = window.fetch;
-      window.fetch = function(resource, config = {}) {
-        config.headers = {
-          ...config.headers,
-          'X-CSRF-Token': sessionStorage.getItem('csrf_token') || '',
-          'X-Requested-With': 'XMLHttpRequest',
-        };
-        return originalFetch.apply(this, [resource, config]);
-      };
-    },
-
-    // ==================== Suspicious Activity Monitoring ====================
-    monitorSuspiciousActivity: function() {
-      const suspiciousPatterns = {
-        consoleAccess: 0,
-        errorAccess: 0,
-        windowAccess: 0,
-        evalAttempts: 0,
-      };
-
-      // Monitor console access attempts
-      ['log', 'warn', 'error', 'info', 'debug', 'table', 'trace'].forEach(method => {
-        const original = console[method];
-        console[method] = function(...args) {
-          suspiciousPatterns.consoleAccess++;
-          if (suspiciousPatterns.consoleAccess > 50) {
-            this.triggerSecurityAlert('Excessive console access detected');
-          }
-          return original.apply(console, args);
-        };
-      });
-
-      // Block eval and related functions
-      const dangerousFunctions = ['eval', 'Function', 'setTimeout', 'setInterval'];
-      dangerousFunctions.forEach(func => {
-        try {
-          window[func] = new Proxy(window[func], {
-            apply: () => {
-              this.triggerSecurityAlert(`${func} execution blocked`);
-              throw new Error(`${func} execution is blocked`);
-            }
-          });
-        } catch (e) {
-          // Some functions can't be proxied
-        }
-      });
-
-      // Monitor localStorage/sessionStorage access
-      const monitorStorage = (storage, name) => {
-        return new Proxy(storage, {
-          get: (target, prop) => {
-            if (typeof target[prop] === 'function') {
-              return function(...args) {
-                suspiciousPatterns.windowAccess++;
-                if (suspiciousPatterns.windowAccess > 100) {
-                  this.triggerSecurityAlert(`Excessive ${name} access detected`);
-                }
-                return target[prop].apply(target, args);
-              };
-            }
-            return target[prop];
-          }
-        });
-      };
-    },
-
-    // ==================== Disable Dangerous Methods ====================
-    disableDangerousMethods: function() {
-      // Override dangerous methods
-      window.eval = new Proxy(eval, {
-        apply: () => {
-          throw new Error('eval() is disabled for security reasons');
-        }
-      });
-
-      // Disable innerHTML assignment with scripts
-      const originalSetterHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
-      Object.defineProperty(Element.prototype, 'innerHTML', {
-        set: function(html) {
-          if (/<script[^>]*>.*?<\/script>/i.test(html)) {
-            throw new Error('Script injection blocked');
-          }
-          return originalSetterHTML.call(this, html);
-        },
-        get: Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').get,
-      });
-    },
-
-    // ==================== Console Protection ====================
-    protectConsole: function() {
-      // Prevent console hijacking
-      Object.defineProperty(window, 'console', {
-        value: console,
-        writable: false,
-        configurable: false
-      });
-
-      // Hide console info
-      const originalLog = console.log;
-      console.log = function(...args) {
-        // Security messages only
-        if (args[0] && args[0].includes('🛡️')) {
-          originalLog.apply(console, args);
-        }
-      };
-    },
-
-    // ==================== Security Event Listeners ====================
-    setupSecurityListeners: function() {
-      // Unload event (prevent session hijacking)
-      window.addEventListener('beforeunload', (e) => {
-        sessionStorage.setItem('last_activity', Date.now());
-      });
-
-      // Visibility change (detect tab switching)
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          sessionStorage.setItem('tab_hidden', Date.now());
-        } else {
-          const hiddenTime = sessionStorage.getItem('tab_hidden');
-          if (hiddenTime && Date.now() - hiddenTime > 300000) { // 5 minutes
-            this.triggerSecurityAlert('Session timeout - please refresh');
-          }
-        }
-      });
-
-      // Block copy/paste in sensitive areas
-      document.addEventListener('copy', (e) => {
-        if (e.target.classList.contains('no-copy')) {
-          e.preventDefault();
-          this.triggerSecurityAlert('Copy disabled for this content');
-        }
-      });
-
-      // Prevent drag/drop of external content
-      document.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'none';
-      });
-
-      document.addEventListener('drop', (e) => {
-        e.preventDefault();
-        this.triggerSecurityAlert('File drop disabled');
-      });
-    },
-
-    // ==================== Close DevTools ====================
-    closeDevTools: function() {
-      // This is a limitation - we can't actually close devtools from JavaScript
-      // But we can make it unusable
-      document.body.innerHTML = '';
-      window.location.href = 'about:blank';
-    },
-
-    // ==================== Alert User ====================
-    triggerSecurityAlert: function(message) {
-      const timestamp = new Date().toLocaleTimeString();
-      console.warn(`[SECURITY] ${timestamp} - ${message}`);
-      
-      // Store in session for monitoring
-      const alerts = JSON.parse(sessionStorage.getItem('security_alerts') || '[]');
-      alerts.push({ message, timestamp, date: new Date().toISOString() });
-      
-      // Keep only last 100 alerts
-      if (alerts.length > 100) alerts.shift();
-      sessionStorage.setItem('security_alerts', JSON.stringify(alerts));
-
-      // Visual indicator (if element exists)
-      if (document.getElementById('security-status')) {
-        const status = document.getElementById('security-status');
-        status.textContent = `⚠️ ${message}`;
-        status.style.background = '#dc2626';
-        setTimeout(() => {
-          status.textContent = '🛡️ Secure';
-          status.style.background = '#16a34a';
-        }, 3000);
-      }
-    },
-
-    // ==================== Production Check ====================
-    isInProduction: function() {
-      return !location.hostname.includes('localhost') && 
-             !location.hostname.includes('127.0.0.1') &&
-             !location.hostname.includes('192.168');
-    },
-
-    // ==================== Detect Spam Patterns ====================
-    detectSpamPatterns: function(content) {
-      if (!content || typeof content !== 'string') return false;
-
-      const patterns = [
-        { regex: /(.)\1{20,}/gi, weight: 3 },                    // Repeated characters
-        { regex: /(http|https):\/\/.*?(http|https):\/\//gi, weight: 2 }, // Multiple URLs
-        { regex: /[^a-zA-Z0-9\s]{30,}/gi, weight: 2 },           // Excessive special chars
-        { regex: /(\b\w+\b)(\s+\1){10,}/gi, weight: 3 },          // Repeated words
-      ];
-
-      let spamScore = 0;
-      patterns.forEach(({ regex, weight }) => {
-        const matches = content.match(regex);
-        if (matches) spamScore += matches.length * weight;
-      });
-
-      return spamScore > 5;
     }
-  };
 
-  // ==================== Auto-Initialize ====================
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => SecuritySystem.init());
-  } else {
-    SecuritySystem.init();
-  }
+    // ==================== RATE LIMITING ====================
+    function checkRateLimit() {
+        const now = Date.now();
+        const oneMinuteAgo = now - 60000;
 
-  // Expose security utilities to global scope
-  window.Security = {
-    validateInput: window.validateInput,
-    sanitizeInput: window.sanitizeInput,
-    escapeHTML: window.escapeHTML,
-    checkSpamLimit: window.checkSpamLimit,
-    checkRequestLimit: window.checkRequestLimit,
-    generateCSRFToken: window.generateCSRFToken,
-    verifyCSRFToken: window.verifyCSRFToken,
-  };
+        // Clean old timestamps
+        STATE.requestTimestamps = STATE.requestTimestamps.filter(t => t > oneMinuteAgo);
 
+        if (STATE.requestTimestamps.length >= CONFIG.MAX_REQUESTS_PER_MINUTE) {
+            logSecurityEvent('RATE_LIMIT_EXCEEDED', {
+                count: STATE.requestTimestamps.length,
+                limit: CONFIG.MAX_REQUESTS_PER_MINUTE,
+            });
+            STATE.suspiciousActivityCount++;
+            return false;
+        }
+
+        STATE.requestTimestamps.push(now);
+        return true;
+    }
+
+    function checkApiRateLimit() {
+        const now = Date.now();
+        const oneHourAgo = now - 3600000;
+
+        STATE.apiCallTimestamps = STATE.apiCallTimestamps.filter(t => t > oneHourAgo);
+
+        if (STATE.apiCallTimestamps.length >= CONFIG.MAX_API_CALLS_PER_HOUR) {
+            logSecurityEvent('API_RATE_LIMIT_EXCEEDED', {
+                count: STATE.apiCallTimestamps.length,
+                limit: CONFIG.MAX_API_CALLS_PER_HOUR,
+            });
+            STATE.suspiciousActivityCount++;
+            showSecurityAlert('⚠️ Too many requests. Please wait before sending another message.');
+            return false;
+        }
+
+        STATE.apiCallTimestamps.push(now);
+        return true;
+    }
+
+    // ==================== DEVELOPER TOOLS PROTECTION ====================
+    function detectDevTools() {
+        // Method 1: Check console opening
+        let devToolOpen = false;
+        const threshold = 160;
+
+        setInterval(() => {
+            if (window.outerHeight - window.innerHeight > threshold ||
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devToolOpen) {
+                    devToolOpen = true;
+                    handleDevToolsDetection();
+                }
+            } else {
+                devToolOpen = false;
+            }
+        }, 500);
+
+        // Method 2: Debugger detection
+        const checkDebugger = function() {
+            const start = performance.now();
+            debugger;
+            const end = performance.now();
+            
+            if (end - start > 100) {
+                handleDevToolsDetection();
+            }
+        };
+
+        setInterval(checkDebugger, 1000);
+
+        // Method 3: Console.log size detection
+        const test = () => {};
+        const objectSize = new Blob([test.toString()]).size;
+        test.toString = function() {
+            handleDevToolsDetection();
+            return objectSize;
+        };
+    }
+
+    function handleDevToolsDetection() {
+        STATE.devToolsDetected++;
+        logSecurityEvent('DEV_TOOLS_DETECTED', { attempt: STATE.devToolsDetected });
+
+        if (STATE.devToolsDetected >= 3) {
+            lockSession('Developer tools access detected. Session locked for security.');
+            return;
+        }
+
+        showSecurityAlert('🔒 Developer tools access detected and blocked.');
+    }
+
+    // ==================== KEYBOARD SHORTCUT BLOCKING ====================
+    function blockDangerousShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // F12 - Developer Tools
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                handleDevToolsDetection();
+                return false;
+            }
+
+            // Ctrl+Shift+I / Cmd+Option+I - Inspector
+            if ((e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+                (e.metaKey && e.altKey && e.keyCode === 73)) {
+                e.preventDefault();
+                handleDevToolsDetection();
+                return false;
+            }
+
+            // Ctrl+Shift+J / Cmd+Option+J - Console
+            if ((e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+                (e.metaKey && e.altKey && e.keyCode === 74)) {
+                e.preventDefault();
+                handleDevToolsDetection();
+                return false;
+            }
+
+            // Ctrl+Shift+C / Cmd+Shift+C - Element Inspector
+            if ((e.ctrlKey && e.shiftKey && e.keyCode === 67) ||
+                (e.metaKey && e.shiftKey && e.keyCode === 67)) {
+                e.preventDefault();
+                handleDevToolsDetection();
+                return false;
+            }
+
+            // Ctrl+Shift+K - Clear Console
+            if ((e.ctrlKey && e.shiftKey && e.keyCode === 75) ||
+                (e.metaKey && e.shiftKey && e.keyCode === 75)) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Right-click menu
+            if (e.keyCode === 93 || (e.ctrlKey && e.keyCode === 83)) {
+                e.preventDefault();
+                return false;
+            }
+        }, true);
+    }
+
+    // ==================== RIGHT-CLICK BLOCKING ====================
+    function blockRightClick() {
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            logSecurityEvent('RIGHT_CLICK_BLOCKED');
+            showSecurityAlert('Right-click is disabled for security.');
+            return false;
+        }, true);
+
+        // Block drag-and-drop of images
+        document.addEventListener('dragstart', (e) => {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Block selection (optional)
+        document.addEventListener('selectstart', (e) => {
+            // Allow selection but prevent copy of sensitive areas
+            const protectedElement = e.target.closest('[data-sensitive]');
+            if (protectedElement) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // ==================== SESSION MANAGEMENT ====================
+    function initializeSession() {
+        const sessionToken = generateSessionToken();
+        sessionStorage.setItem('heang_session_token', sessionToken);
+        sessionStorage.setItem('heang_session_start', Date.now());
+
+        // Monitor session timeout
+        window.addEventListener('mousemove', updateLastActivity);
+        window.addEventListener('keypress', updateLastActivity);
+        window.addEventListener('click', updateLastActivity);
+
+        // Session timeout check
+        setInterval(checkSessionTimeout, 60000);
+    }
+
+    function generateSessionToken() {
+        return btoa(Math.random().toString()).substring(0, 32) + 
+               Date.now().toString(36) + 
+               Math.random().toString(36).substr(2);
+    }
+
+    function updateLastActivity() {
+        STATE.lastActivityTime = Date.now();
+    }
+
+    function checkSessionTimeout() {
+        const inactiveTime = Date.now() - STATE.lastActivityTime;
+        
+        if (inactiveTime > CONFIG.SESSION_TIMEOUT) {
+            showSecurityAlert('⏱️ Your session has expired due to inactivity. Please refresh the page.');
+            lockSession('Session timeout');
+        }
+    }
+
+    // ==================== ACTIVITY MONITORING ====================
+    function monitorSuspiciousActivity() {
+        if (STATE.suspiciousActivityCount >= CONFIG.SUSPICIOUS_ACTIVITY_THRESHOLD) {
+            logSecurityEvent('SUSPICIOUS_ACTIVITY_THRESHOLD_EXCEEDED', {
+                count: STATE.suspiciousActivityCount,
+            });
+            
+            // Show warning
+            if (STATE.suspiciousActivityCount === CONFIG.SUSPICIOUS_ACTIVITY_THRESHOLD) {
+                showSecurityAlert('⚠️ Multiple security violations detected. Account will be locked.');
+            }
+            
+            // Lock after multiple warnings
+            if (STATE.suspiciousActivityCount > CONFIG.SUSPICIOUS_ACTIVITY_THRESHOLD + 2) {
+                lockSession('Repeated security violations detected.');
+            }
+        }
+    }
+
+    // ==================== LOCKING MECHANISM ====================
+    function lockSession(reason) {
+        STATE.isLocked = true;
+        logSecurityEvent('SESSION_LOCKED', { reason });
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'security-lock-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+            backdrop-filter: blur(10px);
+        `;
+
+        const lockBox = document.createElement('div');
+        lockBox.style.cssText = `
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #dc2626;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            text-align: center;
+            color: white;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 0 30px rgba(220, 38, 38, 0.3);
+        `;
+
+        lockBox.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
+            <h2 style="color: #dc2626; font-size: 24px; margin-bottom: 15px;">SESSION LOCKED</h2>
+            <p style="color: #999; margin-bottom: 20px; font-size: 14px;">${reason}</p>
+            <p style="color: #666; margin-bottom: 20px; font-size: 12px;">
+                Session will be automatically unlocked in ${Math.round(CONFIG.LOCK_DURATION / 1000 / 60)} minutes.
+            </p>
+            <button onclick="location.reload()" style="
+                background: #dc2626;
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                margin-top: 20px;
+                transition: all 0.3s;
+            " onmouseover="this.style.background='#991f1f'" onmouseout="this.style.background='#dc2626'">
+                REFRESH PAGE
+            </button>
+        `;
+
+        overlay.appendChild(lockBox);
+        document.body.appendChild(overlay);
+
+        // Disable all interactions
+        document.body.style.pointerEvents = 'none';
+        overlay.style.pointerEvents = 'auto';
+
+        // Auto-unlock after duration
+        setTimeout(() => {
+            STATE.isLocked = false;
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+            document.body.style.pointerEvents = 'auto';
+            showSecurityAlert('✓ Session unlocked. Welcome back!');
+        }, CONFIG.LOCK_DURATION);
+    }
+
+    // ==================== REQUEST INTERCEPTION ====================
+    function interceptFetch() {
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            // Rate limiting check
+            if (!checkRateLimit()) {
+                STATE.suspiciousActivityCount++;
+                return Promise.reject(new Error('Rate limit exceeded'));
+            }
+
+            // Check API calls
+            const url = args[0];
+            if (typeof url === 'string' && (url.includes('openrouter') || url.includes('/api/'))) {
+                if (!checkApiRateLimit()) {
+                    return Promise.reject(new Error('API rate limit exceeded'));
+                }
+            }
+
+            // Validate request
+            const request = args[0];
+            const options = args[1] || {};
+
+            if (STATE.isLocked) {
+                return Promise.reject(new Error('Session is locked'));
+            }
+
+            // Log the request
+            logSecurityEvent('FETCH_REQUEST', {
+                url: String(request).substring(0, 100),
+                method: options.method || 'GET',
+            });
+
+            // Add security headers
+            if (!options.headers) options.headers = {};
+            options.headers['X-Session-Token'] = sessionStorage.getItem('heang_session_token');
+            options.headers['X-Client-Fingerprint'] = STATE.fingerprint.userAgent;
+
+            return originalFetch.apply(window, [request, options])
+                .then(response => {
+                    if (!response.ok && response.status === 429) {
+                        logSecurityEvent('API_RATE_LIMITED');
+                        STATE.suspiciousActivityCount++;
+                    }
+                    return response;
+                })
+                .catch(error => {
+                    logSecurityEvent('FETCH_ERROR', { error: error.message });
+                    throw error;
+                });
+        };
+    }
+
+    // ==================== XSS PROTECTION ====================
+    function setupXSSProtection() {
+        // Sanitize user input before use
+        const originalSetInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+        Object.defineProperty(Element.prototype, 'innerHTML', {
+            set: function(value) {
+                // Only sanitize if not from trusted sources
+                if (typeof value === 'string' && value.includes('<script')) {
+                    logSecurityEvent('XSS_ATTEMPT_DETECTED', { content: value.substring(0, 100) });
+                    console.warn('Potential XSS attack blocked');
+                    return;
+                }
+                return originalSetInnerHTML.set.call(this, value);
+            },
+            get: originalSetInnerHTML.get,
+        });
+    }
+
+    // ==================== CACHING PROTECTION ====================
+    function preventCaching() {
+        // Clear sensitive data from cache
+        if ('caches' in window) {
+            caches.keys().then(cacheNames => {
+                cacheNames.forEach(cacheName => {
+                    caches.open(cacheName).then(cache => {
+                        cache.keys().then(requests => {
+                            requests.forEach(request => {
+                                if (request.url.includes('/api/') || request.url.includes('chat')) {
+                                    cache.delete(request);
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        // Prevent browser caching of sensitive pages
+        const headers = {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+        };
+
+        if (document.head) {
+            Object.entries(headers).forEach(([name, value]) => {
+                const meta = document.createElement('meta');
+                meta.httpEquiv = name;
+                meta.content = value;
+                document.head.appendChild(meta);
+            });
+        }
+    }
+
+    // ==================== LOGGING & MONITORING ====================
+    function logSecurityEvent(eventType, details = {}) {
+        const event = {
+            type: eventType,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent.substring(0, 100),
+            url: window.location.href,
+            details: details,
+            fingerprint: STATE.fingerprint.userAgent,
+        };
+
+        // Store locally (limited to 50 events)
+        let logs = JSON.parse(sessionStorage.getItem('heang_security_logs') || '[]');
+        logs.push(event);
+        if (logs.length > 50) logs.shift();
+        sessionStorage.setItem('heang_security_logs', JSON.stringify(logs));
+
+        // For critical events, try to send to server
+        if (['SESSION_LOCKED', 'DEV_TOOLS_DETECTED', 'XSS_ATTEMPT_DETECTED', 'RATE_LIMIT_EXCEEDED'].includes(eventType)) {
+            sendSecurityLog(event).catch(() => {
+                // Fail silently if server is unreachable
+            });
+        }
+
+        console.log(`[SECURITY] ${eventType}:`, details);
+    }
+
+    function sendSecurityLog(event) {
+        return fetch('/api/security-log', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Session-Token': sessionStorage.getItem('heang_session_token'),
+            },
+            body: JSON.stringify(event),
+        }).catch(() => {
+            // Silently handle errors
+        });
+    }
+
+    // ==================== UI ALERTS ====================
+    function showSecurityAlert(message) {
+        const alertBox = document.createElement('div');
+        alertBox.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fecdd3;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border-left: 4px solid #dc2626;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            z-index: 99999;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 350px;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        `;
+
+        alertBox.textContent = message;
+        document.body.appendChild(alertBox);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alertBox.style.opacity = '0';
+            alertBox.style.transition = 'opacity 0.3s ease-out';
+            setTimeout(() => alertBox.remove(), 300);
+        }, 5000);
+
+        // Add CSS animation
+        const style = document.createElement('style');
+        if (!document.getElementById('security-alerts-style')) {
+            style.id = 'security-alerts-style';
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    // ==================== PUBLIC API ====================
+    window.Security = {
+        checkRateLimit: checkRateLimit,
+        checkApiRateLimit: checkApiRateLimit,
+        isLocked: () => STATE.isLocked,
+        isBlocked: () => STATE.isBlocked,
+        getLogs: () => JSON.parse(sessionStorage.getItem('heang_security_logs') || '[]'),
+        getFingerprint: () => STATE.fingerprint,
+        logEvent: logSecurityEvent,
+    };
+
+    // ==================== INITIALIZATION ====================
+    function init() {
+        console.log('[SECURITY] HeaNg[Black-Cyber] Security System v1.5 initialized');
+
+        // Initialize security measures
+        initializeSession();
+        detectDevTools();
+        blockDangerousShortcuts();
+        blockRightClick();
+        interceptFetch();
+        setupXSSProtection();
+        preventCaching();
+
+        // Monitor activity
+        setInterval(monitorSuspiciousActivity, 5000);
+
+        // Log initialization
+        logSecurityEvent('SECURITY_SYSTEM_INITIALIZED', {
+            fingerprint: STATE.fingerprint.userAgent.substring(0, 50),
+        });
+
+        // Test message
+        showSecurityAlert('✓ Security system active');
+    }
+
+    // Start security system when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();

@@ -1,357 +1,378 @@
 // api/proxy.js
-// ==========================================
-// HeaNg[Black-Cyber] - Advanced Security System
-// ==========================================
-// Vercel Serverless Function with:
-// - DDoS Protection
-// - Rate Limiting (multiple levels)
-// - Spam Detection
-// - User-Agent Validation
-// - SQL Injection Prevention
-// - XSS Prevention
-// - Request Validation
+// ============================================
+// HEANG[BLACK-CYBER] V1.5 - SECURE API PROXY
+// ============================================
+// Enhanced security features:
+// - Advanced rate limiting with multiple layers
+// - DDoS protection
+// - Spam detection
+// - Input validation
+// - Request fingerprinting
+// - Security logging
+// - CORS protection
 
-// ==================== Rate Limiting ====================
-// Advanced rate limiting with sliding window algorithm
+// ============ RATE LIMITING SYSTEM ============
 const rateLimitMap = new Map();
-const suspiciousIPMap = new Map();
-const spamPatternCache = new Map();
+const globalRequestLog = [];
+const blockedIPs = new Map();
+const suspiciousPatterns = new Map();
 
-// Rate limiting configuration
-const RATE_LIMIT_CONFIG = {
-  perMinute: 20,          // 20 requests per minute per IP
-  perHour: 200,           // 200 requests per hour per IP
-  perDay: 2000,           // 2000 requests per day per IP
-  windowMs: 60 * 1000,    // 1 minute window
-  blockDurationMs: 3600000, // 1 hour block
+const LIMITS = {
+  perMinute: 20,
+  perHour: 100,
+  perDay: 500,
+  concurrent: 5,
+  messageLength: 10000,
+  maxContextMessages: 20,
 };
 
-// Enhanced rate limiting with sliding window
-function isRateLimited(ip) {
-  const now = Date.now();
-  const oneMinuteAgo = now - 60 * 1000;
-  const oneHourAgo = now - 60 * 60 * 1000;
-  const oneDayAgo = now - 24 * 60 * 60 * 1000;
+const TIMEOUTS = {
+  minute: 60 * 1000,
+  hour: 60 * 60 * 1000,
+  day: 24 * 60 * 60 * 1000,
+  tempBan: 15 * 60 * 1000, // 15 minutes
+  permanentBan: 24 * 60 * 60 * 1000, // 24 hours
+};
 
-  // Initialize if not exists
-  if (!rateLimitMap.has(ip)) {
-    rateLimitMap.set(ip, { requests: [now], blocked: false, blockUntil: 0 });
+function getClientIP(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || req.connection?.remoteAddress || 'unknown';
+}
+
+function isIPBlocked(ip) {
+  if (!blockedIPs.has(ip)) return false;
+  
+  const { until, reason } = blockedIPs.get(ip);
+  if (Date.now() > until) {
+    blockedIPs.delete(ip);
     return false;
   }
+  
+  return { reason, until };
+}
 
-  const record = rateLimitMap.get(ip);
+function blockIP(ip, duration, reason) {
+  blockedIPs.set(ip, {
+    until: Date.now() + duration,
+    reason,
+    blocked_at: new Date().toISOString(),
+  });
+  
+  console.warn(`[SECURITY] IP BLOCKED: ${ip} - Reason: ${reason} - Duration: ${duration / 1000 / 60} minutes`);
+}
 
-  // Check if IP is temporarily blocked
-  if (record.blocked && now < record.blockUntil) {
-    return true;
+function isRateLimited(ip) {
+  const now = Date.now();
+  const oneMinuteAgo = now - TIMEOUTS.minute;
+  const oneHourAgo = now - TIMEOUTS.hour;
+  const oneDayAgo = now - TIMEOUTS.day;
+  
+  if (!rateLimitMap.has(ip)) {
+    rateLimitMap.set(ip, {
+      minute: [],
+      hour: [],
+      day: [],
+      concurrent: 0,
+      violations: 0,
+    });
   }
   
-  if (record.blocked && now >= record.blockUntil) {
-    record.blocked = false;
-    record.blockUntil = 0;
-    record.requests = [];
-  }
-
-  // Clean old requests
-  record.requests = record.requests.filter(time => time > oneDayAgo);
-
-  // Check limits
-  const lastMinute = record.requests.filter(time => time > oneMinuteAgo).length;
-  const lastHour = record.requests.filter(time => time > oneHourAgo).length;
-  const lastDay = record.requests.length;
-
-  if (lastMinute >= RATE_LIMIT_CONFIG.perMinute ||
-      lastHour >= RATE_LIMIT_CONFIG.perHour ||
-      lastDay >= RATE_LIMIT_CONFIG.perDay) {
+  const record = rateLimitMap.get(ip);
+  
+  // Clean old timestamps
+  record.minute = record.minute.filter(t => t > oneMinuteAgo);
+  record.hour = record.hour.filter(t => t > oneHourAgo);
+  record.day = record.day.filter(t => t > oneDayAgo);
+  
+  // Check per-minute limit
+  if (record.minute.length >= LIMITS.perMinute) {
+    record.violations++;
     
-    // Block this IP
-    record.blocked = true;
-    record.blockUntil = now + RATE_LIMIT_CONFIG.blockDurationMs;
-    console.warn(`🚨 Rate limit exceeded for IP: ${ip}`);
-    return true;
-  }
-
-  record.requests.push(now);
-  return false;
-}
-
-// ==================== Spam Detection ====================
-function detectSpamPattern(content) {
-  if (!content || typeof content !== 'string') return false;
-
-  const patterns = [
-    { regex: /(.)\1{25,}/gi, weight: 5, name: 'Repeated chars' },
-    { regex: /(http|https):\/\/.*?(http|https):\/\//gi, weight: 4, name: 'Multiple URLs' },
-    { regex: /[^a-zA-Z0-9\s\.\,\!\?\-]{40,}/gi, weight: 4, name: 'Excessive special chars' },
-    { regex: /(\b\w+\b)(\s+\1){15,}/gi, weight: 5, name: 'Repeated words' },
-    { regex: /\b(viagra|casino|lottery|click|buy|free)\b/gi, weight: 3, name: 'Spam keywords' },
-    { regex: /<script|javascript:|on\w+=/gi, weight: 10, name: 'Script injection' },
-    { regex: /union\s+select|drop\s+table|delete\s+from|insert\s+into/gi, weight: 10, name: 'SQL injection' },
-  ];
-
-  let spamScore = 0;
-  const detected = [];
-
-  patterns.forEach(({ regex, weight, name }) => {
-    const matches = content.match(regex);
-    if (matches) {
-      spamScore += matches.length * weight;
-      detected.push(name);
+    if (record.violations > 3) {
+      blockIP(ip, TIMEOUTS.tempBan, 'Repeated rate limit violations');
+      return { limited: true, reason: 'BLOCKED_TEMP', retryAfter: TIMEOUTS.tempBan / 1000 };
     }
-  });
-
-  if (detected.length > 0) {
-    console.warn(`⚠️ Spam patterns detected: ${detected.join(', ')} (score: ${spamScore})`);
+    
+    return { limited: true, reason: 'RATE_LIMIT_MINUTE', retryAfter: 60 };
   }
-
-  return spamScore > 10;
+  
+  // Check per-hour limit
+  if (record.hour.length >= LIMITS.perHour) {
+    record.violations++;
+    blockIP(ip, TIMEOUTS.tempBan, 'Hourly rate limit exceeded');
+    return { limited: true, reason: 'RATE_LIMIT_HOUR', retryAfter: 3600 };
+  }
+  
+  // Check per-day limit
+  if (record.day.length >= LIMITS.perDay) {
+    record.violations++;
+    blockIP(ip, TIMEOUTS.permanentBan, 'Daily rate limit exceeded');
+    return { limited: true, reason: 'RATE_LIMIT_DAY', retryAfter: 86400 };
+  }
+  
+  // Record the request
+  record.minute.push(now);
+  record.hour.push(now);
+  record.day.push(now);
+  
+  return { limited: false };
 }
 
-// ==================== User-Agent Validation ====================
-function validateUserAgent(userAgent) {
-  if (!userAgent) return false;
-
-  // Reject known malicious user agents
-  const blacklisted = [
-    /curl/i,
-    /wget/i,
-    /scrapy/i,
-    /bot/i,
-    /spider/i,
-    /crawler/i,
-    /sqlmap/i,
-    /nikto/i,
-    /nmap/i,
-  ];
-
-  // Allow specific bots
-  const allowedBots = [/googlebot/i, /bingbot/i, /slurp/i, /duckduckbot/i];
-
-  for (const bot of allowedBots) {
-    if (bot.test(userAgent)) return true;
-  }
-
-  for (const blacklist of blacklisted) {
-    if (blacklist.test(userAgent)) {
-      console.warn(`🚨 Malicious User-Agent blocked: ${userAgent}`);
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// ==================== Clean up rate limit map ====================
+// Clean up old entries periodically
 setInterval(() => {
   const now = Date.now();
-  const oneDayAgo = now - 24 * 60 * 60 * 1000;
   
+  // Clean rate limit map
   for (const [ip, record] of rateLimitMap.entries()) {
-    // Keep only requests from the last day
-    record.requests = record.requests.filter(time => time > oneDayAgo);
+    record.minute = record.minute.filter(t => t > now - TIMEOUTS.minute);
+    record.hour = record.hour.filter(t => t > now - TIMEOUTS.hour);
+    record.day = record.day.filter(t => t > now - TIMEOUTS.day);
     
-    // Remove if no requests and not blocked
-    if (record.requests.length === 0 && !record.blocked) {
+    if (record.minute.length === 0 && record.hour.length === 0 && record.day.length === 0) {
       rateLimitMap.delete(ip);
     }
   }
-
-  // Clean suspicious IP map
-  for (const [ip, data] of suspiciousIPMap.entries()) {
-    if (now > data.expiresAt) {
-      suspiciousIPMap.delete(ip);
+  
+  // Clean blocked IPs
+  for (const [ip, data] of blockedIPs.entries()) {
+    if (now > data.until) {
+      blockedIPs.delete(ip);
     }
   }
-}, 60 * 60 * 1000); // Every hour
-
-// ==================== Main Request Handler ====================
-export default async function handler(req, res) {
-  // Get client IP (supporting proxies)
-  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 
-             req.headers['x-real-ip'] ||
-             req.socket?.remoteAddress ||
-             'unknown';
-
-  // ==================== Phase 1: Initial Validation ====================
   
-  // Validate User-Agent
-  const userAgent = req.headers['user-agent'] || 'unknown';
-  if (!validateUserAgent(userAgent)) {
-    return res.status(403).json({ 
-      error: 'Access denied',
-      code: 'INVALID_USER_AGENT'
-    });
+  // Clean global log (keep only last 1000 entries)
+  if (globalRequestLog.length > 1000) {
+    globalRequestLog.splice(0, globalRequestLog.length - 1000);
   }
+}, TIMEOUTS.hour);
 
-  // Rate limiting check
-  if (isRateLimited(ip)) {
-    console.warn(`⏱️ Rate limit exceeded for IP: ${ip}`);
-    return res.status(429).json({ 
-      error: 'Too many requests. Please try again later.',
-      code: 'RATE_LIMIT_EXCEEDED',
-      retryAfter: 60 
-    });
+// ============ SECURITY UTILITIES ============
+function sanitizeInput(text) {
+  // Remove potentially dangerous content
+  return text
+    .replace(/[<>]/g, '')
+    .substring(0, LIMITS.messageLength);
+}
+
+function validateSession(req) {
+  const sessionToken = req.headers['x-session-token'];
+  const fingerprint = req.headers['x-client-fingerprint'];
+  
+  if (!sessionToken || !fingerprint) {
+    return { valid: false, reason: 'Missing session headers' };
   }
+  
+  return { valid: true };
+}
 
-  // ==================== Phase 2: Security Headers ====================
+function detectSuspiciousPatterns(messages) {
+  let suspiciousScore = 0;
+  
+  for (const msg of messages) {
+    const content = msg.content?.toLowerCase() || '';
+    
+    // Check for SQL injection patterns
+    if (/(\bselect\b|\bunion\b|\bdrop\b|\binsert\b|\bupdate\b|\bdelete\b).*(from|where|table)/gi.test(content)) {
+      suspiciousScore += 20;
+    }
+    
+    // Check for script injection
+    if (/<script|javascript:|onerror=/gi.test(content)) {
+      suspiciousScore += 30;
+    }
+    
+    // Check for excessive special characters
+    if ((content.match(/[^a-zA-Z0-9\s.,!?-]/g) || []).length / content.length > 0.5) {
+      suspiciousScore += 10;
+    }
+    
+    // Check for repeated characters (spam pattern)
+    if (/(.)\1{10,}/g.test(content)) {
+      suspiciousScore += 15;
+    }
+  }
+  
+  return suspiciousScore;
+}
+
+function logRequest(ip, data) {
+  globalRequestLog.push({
+    ip,
+    timestamp: new Date().toISOString(),
+    method: data.method,
+    status: data.status,
+    model: data.model,
+    messageCount: data.messageCount,
+    suspicious: data.suspicious,
+  });
+}
+
+function logSecurityEvent(ip, eventType, details) {
+  console.log(`[SECURITY] ${eventType} - IP: ${ip} - Details:`, details);
+}
+
+// ============ MAIN HANDLER ============
+export default async function handler(req, res) {
+  const ip = getClientIP(req);
+  const now = new Date().toISOString();
+
+  // ========== SECURITY HEADERS ==========
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline';");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || 'https://heang-ai.vercel.app');
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-Token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Session-Token, X-Client-Fingerprint');
   
-  // Rate limit info headers
-  res.setHeader('X-RateLimit-Limit', RATE_LIMIT_CONFIG.perMinute.toString());
-  res.setHeader('X-RateLimit-Window', '60');
-
-  // ==================== Phase 3: Handle Preflight ====================
+  // Preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Only allow POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ 
-      error: 'Method not allowed',
-      code: 'METHOD_NOT_ALLOWED'
+  // ========== IP BLOCKING CHECK ==========
+  const blocked = isIPBlocked(ip);
+  if (blocked) {
+    logSecurityEvent(ip, 'IP_BLOCKED', blocked);
+    res.setHeader('Retry-After', Math.ceil((blocked.until - Date.now()) / 1000));
+    return res.status(429).json({
+      error: 'Access denied',
+      reason: blocked.reason,
+      retryAfter: Math.ceil((blocked.until - Date.now()) / 1000),
     });
   }
 
+  // ========== RATE LIMITING CHECK ==========
+  const rateLimitCheck = isRateLimited(ip);
+  if (rateLimitCheck.limited) {
+    logSecurityEvent(ip, 'RATE_LIMIT_EXCEEDED', rateLimitCheck);
+    res.setHeader('X-RateLimit-Limit', LIMITS.perMinute);
+    res.setHeader('X-RateLimit-Remaining', '0');
+    res.setHeader('X-RateLimit-Reset', new Date(Date.now() + TIMEOUTS.minute).toISOString());
+    res.setHeader('Retry-After', rateLimitCheck.retryAfter);
+    return res.status(429).json({
+      error: 'Too many requests',
+      reason: rateLimitCheck.reason,
+      retryAfter: rateLimitCheck.retryAfter,
+    });
+  }
+
+  // ========== METHOD VALIDATION ==========
+  if (req.method !== 'POST') {
+    logSecurityEvent(ip, 'INVALID_METHOD', { method: req.method });
+    return res.status(405).json({ error: 'Method not allowed. Only POST is supported.' });
+  }
+
   try {
-    // ==================== Phase 4: Validate Request Body ====================
-    
+    // ========== SESSION VALIDATION ==========
+    const sessionValid = validateSession(req);
+    if (!sessionValid.valid) {
+      logSecurityEvent(ip, 'INVALID_SESSION', sessionValid);
+      return res.status(401).json({ error: sessionValid.reason });
+    }
+
+    // ========== REQUEST BODY VALIDATION ==========
     const { messages, model, temperature, stream } = req.body;
 
-    // Validate messages parameter
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ 
-        error: 'Invalid messages format',
-        code: 'INVALID_MESSAGES'
+      logSecurityEvent(ip, 'INVALID_MESSAGES', {});
+      return res.status(400).json({ error: 'Invalid messages format' });
+    }
+
+    // Check message count
+    if (messages.length > LIMITS.maxContextMessages) {
+      return res.status(400).json({
+        error: `Too many messages. Maximum ${LIMITS.maxContextMessages} allowed.`,
       });
     }
 
-    // Validate message count
-    if (messages.length > 50) {
-      return res.status(400).json({ 
-        error: 'Too many messages. Maximum 50 allowed.',
-        code: 'MESSAGE_COUNT_EXCEEDED'
-      });
-    }
-
-    // ==================== Phase 5: Content Validation & Security ====================
-
-    // Check each message for spam and security issues
-    for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i];
-
-      if (!msg.content || typeof msg.content !== 'string') {
-        return res.status(400).json({ 
-          error: `Invalid message format at index ${i}`,
-          code: 'INVALID_MESSAGE_FORMAT'
-        });
-      }
-
-      const content = msg.content;
-
-      // Validate content length
-      if (content.length > 5000) {
-        return res.status(400).json({ 
-          error: `Message too long at index ${i}. Maximum 5000 characters per message.`,
-          code: 'MESSAGE_TOO_LONG'
-        });
-      }
-
-      // Detect spam patterns
-      if (detectSpamPattern(content)) {
-        console.warn(`🚨 Spam detected from IP: ${ip}`);
-        return res.status(400).json({ 
-          error: 'Message contains spam or malicious content',
-          code: 'SPAM_DETECTED'
-        });
-      }
-
-      // Validate role
-      if (msg.role && !['user', 'assistant', 'system'].includes(msg.role)) {
-        return res.status(400).json({ 
-          error: `Invalid role at index ${i}`,
-          code: 'INVALID_ROLE'
-        });
-      }
-    }
-
-    // Total content length check
+    // ========== CONTENT VALIDATION ==========
     const totalLength = messages.reduce((sum, m) => sum + (m.content?.length || 0), 0);
-    if (totalLength > 15000) {
-      return res.status(400).json({ 
-        error: 'Total message content too long. Maximum 15000 characters.',
-        code: 'TOTAL_LENGTH_EXCEEDED'
+    if (totalLength > LIMITS.messageLength) {
+      logSecurityEvent(ip, 'MESSAGE_TOO_LONG', { length: totalLength });
+      return res.status(400).json({
+        error: `Message too long. Maximum ${LIMITS.messageLength} characters.`,
       });
     }
 
-    // ==================== Phase 6: Model & Parameter Validation ====================
+    // ========== SPAM & PATTERN DETECTION ==========
+    const suspiciousScore = detectSuspiciousPatterns(messages);
+    if (suspiciousScore > 50) {
+      logSecurityEvent(ip, 'SUSPICIOUS_PATTERN_DETECTED', { score: suspiciousScore });
+      
+      // Increment violations for repeated suspicious activity
+      const record = rateLimitMap.get(ip);
+      if (record) record.violations++;
 
-    // Whitelist models
-    const allowedModels = [
-      'deepseek/deepseek-v4-flash',
-      'deepseek/deepseek-chat',
-      'meta-llama/llama-3-8b-instruct',
-      'mistral/mistral-small',
-    ];
-
-    const selectedModel = model || 'deepseek/deepseek-v4-flash';
-    if (!allowedModels.includes(selectedModel)) {
-      console.warn(`⚠️ Unauthorized model requested: ${selectedModel} by IP: ${ip}`);
-      return res.status(400).json({ 
-        error: 'Model not allowed',
-        code: 'INVALID_MODEL'
+      return res.status(400).json({
+        error: 'Request contains suspicious content',
+        details: 'Your request has been flagged for security review.',
       });
     }
 
-    // Validate temperature
-    const validTemperature = Math.min(Math.max(parseFloat(temperature) || 0.75, 0), 2);
+    // ========== API KEY VALIDATION ==========
+    const API_KEY = process.env.OPENROUTER_API_KEY;
+    if (!API_KEY) {
+      console.error('[SECURITY] OPENROUTER_API_KEY is not configured');
+      return res.status(500).json({
+        error: 'Server configuration error',
+      });
+    }
 
-    // ==================== Phase 7: Build & Send Request ====================
+    // ========== PREPARE REQUEST ==========
+    const sanitizedMessages = messages.map(m => ({
+      ...m,
+      content: sanitizeInput(m.content),
+    })).slice(-LIMITS.maxContextMessages);
 
     const requestBody = {
-      model: selectedModel,
-      messages: messages.slice(-20), // Limit context to last 20 messages for safety
-      temperature: validTemperature,
-      stream: stream === true,
+      model: model || 'deepseek/deepseek-v4-flash',
+      messages: sanitizedMessages,
+      temperature: Math.min(Math.max(temperature || 0.75, 0), 1),
+      stream: stream || false,
     };
 
-    console.log(`✅ [${ip}] Request to OpenRouter - Model: ${selectedModel}`);
+    console.log(`[${ip}] ✓ Request validated - Model: ${requestBody.model} - Messages: ${messages.length}`);
 
+    // ========== API REQUEST ==========
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': process.env.VERCEL_URL || 'https://heang-ai.vercel.app',
         'X-Title': 'HeaNg Black-Cyber AI',
-        'User-Agent': 'HeaNg-AI/1.5 (+https://heang-ai.vercel.app)',
+        'User-Agent': 'HeaNg-BlackCyber-Secure-Client/1.5',
       },
       body: JSON.stringify(requestBody),
+      timeout: 30000,
     });
 
+    // ========== RESPONSE HANDLING ==========
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`❌ OpenRouter API error: ${response.status} - ${errorText.substring(0, 200)}`);
-      return res.status(response.status).json({ 
+      logSecurityEvent(ip, 'API_ERROR', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+
+      console.error(`[OpenRouter API] ${response.status} - ${errorText.substring(0, 200)}`);
+
+      return res.status(response.status).json({
         error: `API error: ${response.status}`,
-        code: 'API_ERROR',
-        details: errorText.substring(0, 200)
+        message: 'Unable to process your request. Please try again.',
       });
     }
 
-    // ==================== Phase 8: Stream or Return Response ====================
-
+    // ========== STREAMING RESPONSE ==========
     if (stream) {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
@@ -364,25 +385,64 @@ export default async function handler(req, res) {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+
           const chunk = decoder.decode(value);
           res.write(chunk);
         }
+
+        logRequest(ip, {
+          method: 'POST',
+          status: 200,
+          model: requestBody.model,
+          messageCount: messages.length,
+          suspicious: suspiciousScore > 0,
+        });
+
         res.end();
       } catch (streamError) {
-        console.error('Streaming error:', streamError);
+        console.error('[Stream Error]:', streamError.message);
+        logSecurityEvent(ip, 'STREAM_ERROR', { error: streamError.message });
         res.end();
       }
     } else {
+      // ========== JSON RESPONSE ==========
       const data = await response.json();
+
+      logRequest(ip, {
+        method: 'POST',
+        status: 200,
+        model: requestBody.model,
+        messageCount: messages.length,
+        suspicious: suspiciousScore > 0,
+      });
+
       res.status(200).json(data);
     }
-
   } catch (error) {
-    console.error('🔴 Proxy error:', error);
-    res.status(500).json({ 
+    logSecurityEvent(ip, 'HANDLER_ERROR', { error: error.message });
+    console.error('[Proxy Error]:', error);
+
+    return res.status(500).json({
       error: 'Internal server error',
-      code: 'INTERNAL_ERROR',
-      message: process.env.NODE_ENV === 'production' ? 'An error occurred' : error.message
+      message: 'An unexpected error occurred. Please try again.',
+    });
+  }
+}
+
+// ============ ADDITIONAL ENDPOINTS ============
+// Handle security logs endpoint (for debugging)
+if (process.env.NODE_ENV !== 'production') {
+  export async function logs(req, res) {
+    if (req.method !== 'GET') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const limit = parseInt(req.query.limit) || 100;
+    return res.status(200).json({
+      totalRequests: globalRequestLog.length,
+      recentRequests: globalRequestLog.slice(-limit),
+      blockedIPs: Array.from(blockedIPs.entries()),
+      timestamp: new Date().toISOString(),
     });
   }
 }
