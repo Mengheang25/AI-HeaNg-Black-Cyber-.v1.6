@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>HeaNg[Black-Cyber] · AI</title>
+    <title>HeaNg[Black-Cyber] · AI Chat</title>
     
     <!-- Favicon - Website Logo -->
     <link rel="icon" type="image/png" href="public/worm_icon.png">
@@ -305,6 +305,18 @@
             word-break: break-word;
         }
     </style>
+    
+    <!-- ================================ -->
+    <!-- SECURITY SYSTEM - LOADED FIRST -->
+    <!-- ================================ -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://*;">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <script src="public/security.js" defer></script>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-gray-100 antialiased">
 
@@ -343,11 +355,21 @@
                 <div class="flex items-center gap-3"><i id="mode-icon" class="fa-regular fa-moon text-lg w-5"></i><span id="mode-text" class="font-medium text-sm">Dark mode</span></div>
                 <div id="toggle-switch-bg" class="w-9 h-5 bg-gray-200 rounded-full p-0.5 transition-all flex items-center"><div id="toggle-switch-circle" class="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform"></div></div>
             </button>
+            <!-- User Info -->
+            <div id="user-info-section" class="p-2 mb-2 bg-gray-50 rounded-lg text-center hidden">
+                <div class="text-xs text-gray-600 mb-1">Logged in as:</div>
+                <div id="user-name" class="text-sm font-semibold text-gray-800 truncate"></div>
+                <div id="user-email" class="text-xs text-gray-500 truncate"></div>
+            </div>
+            <!-- Admin Panel Button -->
+            <button id="admin-btn" onclick="goToAdmin()" class="w-full hidden flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-solid fa-shield text-lg w-5"></i><span class="font-medium text-sm">Admin Panel</span></button>
             <!-- Telegram direct link -->
             <button onclick="window.open('https://t.me/mengheang25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-brands fa-telegram text-xl w-5"></i><span class="font-medium text-sm">Telegram</span></button>
             <!-- Group direct link -->
             <button onclick="window.open('https://t.me/cyberkid25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-solid fa-comment-dots text-lg w-5"></i><span class="font-medium text-sm">Channel</span></button>
             <button onclick="clearAllChats()" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-regular fa-trash-can text-lg w-5"></i><span class="font-medium text-sm">Clear all chats</span></button>
+            <!-- Logout Button -->
+            <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-2 py-2.5 text-red-600 hover:bg-red-50 rounded-xl border-t border-gray-200 mt-2"><i class="fa-solid fa-sign-out-alt text-lg w-5"></i><span class="font-medium text-sm">Logout</span></button>
         </div>
     </aside>
     <div id="backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-black/40 z-40 hidden transition-opacity lg:hidden"></div>
@@ -399,6 +421,57 @@
 <div id="toast-container" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] pointer-events-none flex flex-col gap-1"></div>
 
 <script>
+    // ======================== AUTHENTICATION CHECK =========================
+    
+    // Check if user is logged in
+    function checkAuth() {
+        const token = localStorage.getItem('heang_token');
+        const user = JSON.parse(localStorage.getItem('heang_user') || '{}');
+        
+        if (!token || !user.email) {
+            window.location.href = '/auth.html';
+            return false;
+        }
+        
+        return user;
+    }
+    
+    // Update user info in sidebar
+    function updateUserInfo() {
+        const user = JSON.parse(localStorage.getItem('heang_user') || '{}');
+        if (user.email) {
+            const userInfoSection = document.getElementById('user-info-section');
+            const userNameEl = document.getElementById('user-name');
+            const userEmailEl = document.getElementById('user-email');
+            
+            if (userInfoSection && userNameEl && userEmailEl) {
+                userNameEl.textContent = user.name || 'User';
+                userEmailEl.textContent = user.email;
+                userInfoSection.classList.remove('hidden');
+                
+                // Show admin button if user is admin
+                const adminBtn = document.getElementById('admin-btn');
+                if (user.email === 'mengheangkh25@gmail.com' && adminBtn) {
+                    adminBtn.classList.remove('hidden');
+                }
+            }
+        }
+    }
+    
+    // Logout function
+    function handleLogout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('heang_token');
+            localStorage.removeItem('heang_user');
+            window.location.href = '/auth.html';
+        }
+    }
+    
+    // Go to admin panel
+    function goToAdmin() {
+        window.location.href = '/admin.html';
+    }
+    
     // ======================== CONFIGURATION =========================
     const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
     const API_KEY = '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';
@@ -579,23 +652,46 @@
                 headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model: MODEL_NAME, messages: conversationHistory.map(m => ({ role: m.role, content: m.content })), temperature: 0.75, stream: true })
             });
-            if(!resp.ok) throw new Error(`API ${resp.status}`);
+            
+            // Better error handling
+            if(!resp.ok) {
+                let errorMsg = `API Error ${resp.status}`;
+                try {
+                    const errorText = await resp.text();
+                    if(errorText) {
+                        try {
+                            const errorJson = JSON.parse(errorText);
+                            errorMsg = errorJson.error?.message || errorMsg;
+                        } catch(e) {
+                            errorMsg = errorText.slice(0, 100) || errorMsg;
+                        }
+                    }
+                } catch(e) {}
+                throw new Error(errorMsg);
+            }
+            
+            if(!resp.body) throw new Error('No response body received');
+            
             const reader = resp.body.getReader();
             const decoder = new TextDecoder();
             let full = '';
             let lastChunkTime = 0;
+            
             while(true) {
                 const { done, value } = await reader.read();
                 if(done) break;
-                const chunk = decoder.decode(value);
+                
+                const chunk = decoder.decode(value, { stream: true });
                 const lines = chunk.split('\n');
+                
                 for(const line of lines) {
                     if(line.startsWith('data: ')) {
                         const data = line.slice(6).trim();
-                        if(data === '[DONE]') continue;
+                        if(!data || data === '[DONE]') continue;
+                        
                         try {
                             const json = JSON.parse(data);
-                            const delta = json.choices[0]?.delta?.content || '';
+                            const delta = json.choices?.[0]?.delta?.content || '';
                             if(delta) {
                                 full += delta;
                                 targetBubble.innerHTML = formatCodeBlocks(full) + '<span class="streaming-cursor"></span>';
@@ -605,10 +701,32 @@
                                     lastChunkTime = Date.now();
                                 }
                             }
+                        } catch(e) {
+                            console.error('JSON parse error:', e, 'Line:', line);
+                        }
+                    }
+                }
+            }
+            
+            // Final decode
+            const finalChunk = decoder.decode();
+            if(finalChunk) {
+                const lines = finalChunk.split('\n');
+                for(const line of lines) {
+                    if(line.startsWith('data: ')) {
+                        const data = line.slice(6).trim();
+                        if(!data || data === '[DONE]') continue;
+                        try {
+                            const json = JSON.parse(data);
+                            const delta = json.choices?.[0]?.delta?.content || '';
+                            if(delta) full += delta;
                         } catch(e) {}
                     }
                 }
             }
+            
+            if(!full) throw new Error('No response received from API');
+            
             targetBubble.innerHTML = formatCodeBlocks(full);
             conversationHistory.push({ role: 'assistant', content: full });
             const updatedSession = allSessions.find(s => s.id === currentSessionId);
@@ -617,8 +735,10 @@
             attachCopyEvents();
             ultraSmoothScrollToBottom();
         } catch(err) {
-            targetBubble.innerHTML = `<span class="text-red-400">⚠️ Engine overload: ${err.message}</span>`;
-            showToast("API error", true);
+            const errorMsg = err.message || 'Unknown error occurred';
+            targetBubble.innerHTML = `<span class="text-red-400">⚠️ Engine overload:<br>${escapeHtml(errorMsg)}</span>`;
+            console.error('StreamAI Error:', err);
+            showToast("API error: " + errorMsg.slice(0, 50), true);
             ultraSmoothScrollToBottom();
         }
     }
@@ -772,6 +892,13 @@
     async function fetchSystemPrompt() { try { const res = await fetch('public/system_prompt.txt?nocache='+Date.now()); if(res.ok) systemPromptCache = await res.text(); } catch(e) {} }
     
     (async function boot() {
+        // Check authentication first
+        const user = checkAuth();
+        if (!user) return;
+        
+        // Update user information in sidebar
+        updateUserInfo();
+        
         await fetchSystemPrompt();
         if(!currentSessionId || !allSessions.find(s=>s.id===currentSessionId)) createNewChatSession();
         else loadSession(currentSessionId);

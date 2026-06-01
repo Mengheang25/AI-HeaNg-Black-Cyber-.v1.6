@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeaNg[Black-Cyber] · Authentication</title>
+    
+    <link rel="icon" type="image/png" href="public/worm_icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0c 0%, #1a1114 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            color: #e4e4e7;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #dc2626;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+        }
+        
+        .form-input::placeholder {
+            color: rgba(228, 228, 231, 0.5);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-text {
+            color: #fca5a5;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        
+        .success-text {
+            color: #86efac;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        
+        .logo-pulse {
+            animation: softPulse 3s infinite;
+        }
+        
+        @keyframes softPulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.8; }
+        }
+        
+        .tab-btn {
+            position: relative;
+            padding: 12px 24px;
+            color: rgba(228, 228, 231, 0.6);
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: color 0.3s ease;
+            font-size: 15px;
+        }
+        
+        .tab-btn.active {
+            color: #dc2626;
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #dc2626;
+            border-radius: 1px;
+        }
+        
+        .loading-spinner {
+            border: 2px solid rgba(220, 38, 38, 0.2);
+            border-top: 2px solid #dc2626;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden shadow-lg flex items-center justify-center logo-pulse">
+                    <img src="public/worm.png" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/64x64?text=🐛'">
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">HeaNg[Black-Cyber]</h1>
+                <p class="text-gray-400">🤖 AI Chat Authentication</p>
+            </div>
+
+            <!-- Auth Container -->
+            <div class="glass-effect rounded-2xl p-8 space-y-6">
+                <!-- Tab Navigation -->
+                <div class="flex border-b border-gray-700">
+                    <button id="signin-tab" class="tab-btn active" onclick="switchTab('signin')">
+                        <i class="fa-solid fa-sign-in-alt mr-2"></i>Sign In
+                    </button>
+                    <button id="signup-tab" class="tab-btn" onclick="switchTab('signup')">
+                        <i class="fa-solid fa-user-plus mr-2"></i>Sign Up
+                    </button>
+                </div>
+
+                <!-- Sign In Form -->
+                <form id="signin-form" class="space-y-4">
+                    <div>
+                        <label class="block text-gray-300 text-sm font-medium mb-2">📧 Email</label>
+                        <input type="email" id="signin-email" class="form-input w-full" placeholder="your@email.com" required>
+                        <div class="error-text" id="signin-email-error"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-300 text-sm font-medium mb-2">🔑 Password</label>
+                        <input type="password" id="signin-password" class="form-input w-full" placeholder="••••••••" required>
+                        <div class="error-text" id="signin-password-error"></div>
+                    </div>
+
+                    <button type="button" onclick="handleSignIn()" class="btn-primary w-full flex items-center justify-center gap-2" id="signin-btn">
+                        <i class="fa-solid fa-sign-in-alt"></i>Sign In
+                    </button>
+
+                    <div id="signin-message" class="text-center"></div>
+                </form>
+
+                <!-- Sign Up Form -->
+                <form id="signup-form" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-gray-300 text-sm font-medium mb-2">👤 Full Name</label>
+                        <input type="text" id="signup-name" class="form-input w-full" placeholder="Your Full Name" required>
+                        <div class="error-text" id="signup-name-error"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-300 text-sm font-medium mb-2">📧 Email</label>
+                        <input type="email" id="signup-email" class="form-input w-full" placeholder="your@email.com" required>
+                        <div class="error-text" id="signup-email-error"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-300 text-sm font-medium mb-2">🔐 Password</label>
+                        <input type="password" id="signup-password" class="form-input w-full" placeholder="••••••••" required>
+                        <div class="error-text" id="signup-password-error"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-300 text-sm font-medium mb-2">✓ Confirm Password</label>
+                        <input type="password" id="signup-confirm" class="form-input w-full" placeholder="••••••••" required>
+                        <div class="error-text" id="signup-confirm-error"></div>
+                    </div>
+
+                    <button type="button" onclick="handleSignUp()" class="btn-primary w-full flex items-center justify-center gap-2" id="signup-btn">
+                        <i class="fa-solid fa-user-plus"></i>Create Account
+                    </button>
+
+                    <div id="signup-message" class="text-center"></div>
+                </form>
+
+                <!-- Info Text -->
+                <div class="text-center text-gray-400 text-xs pt-4 border-t border-gray-700">
+                    <p>🛡️ Your data is protected with enterprise-grade security</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-8 text-gray-500 text-sm">
+                <p>HeaNg[Black-Cyber] AI Chat v1.5</p>
+                <p class="text-xs mt-2">© 2026 All Rights Reserved</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== Authentication Logic ====================
+        
+        function switchTab(tab) {
+            const signinForm = document.getElementById('signin-form');
+            const signupForm = document.getElementById('signup-form');
+            const signinTab = document.getElementById('signin-tab');
+            const signupTab = document.getElementById('signup-tab');
+
+            if (tab === 'signin') {
+                signinForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                signinTab.classList.add('active');
+                signupTab.classList.remove('active');
+            } else {
+                signinForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                signinTab.classList.remove('active');
+                signupTab.classList.add('active');
+            }
+            
+            clearErrors();
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-text').forEach(el => el.textContent = '');
+            document.querySelectorAll('.success-text').forEach(el => el.textContent = '');
+        }
+
+        function showError(inputId, message) {
+            const input = document.getElementById(inputId);
+            const errorEl = document.getElementById(inputId + '-error');
+            if (errorEl) {
+                errorEl.textContent = '❌ ' + message;
+            }
+            input.style.borderColor = '#fca5a5';
+        }
+
+        function showSuccess(message) {
+            const activeForm = document.getElementById('signin-form').classList.contains('hidden') ? 'signup-message' : 'signin-message';
+            const msgEl = document.getElementById(activeForm);
+            msgEl.innerHTML = '<div class="success-text">✅ ' + message + '</div>';
+        }
+
+        async function handleSignIn() {
+            clearErrors();
+            const email = document.getElementById('signin-email').value.trim();
+            const password = document.getElementById('signin-password').value.trim();
+            const btn = document.getElementById('signin-btn');
+
+            // Validation
+            if (!email) {
+                showError('signin-email', 'Email is required');
+                return;
+            }
+            if (!password) {
+                showError('signin-password', 'Password is required');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'signin', email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Store user data
+                    localStorage.setItem('heang_user', JSON.stringify(data.user));
+                    localStorage.setItem('heang_token', data.token);
+                    showSuccess('Welcome! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 1000);
+                } else {
+                    showError('signin-email', data.error || 'Sign in failed');
+                }
+            } catch (error) {
+                showError('signin-email', error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-sign-in-alt"></i>Sign In';
+            }
+        }
+
+        async function handleSignUp() {
+            clearErrors();
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value.trim();
+            const confirm = document.getElementById('signup-confirm').value.trim();
+            const btn = document.getElementById('signup-btn');
+
+            // Validation
+            if (!name) {
+                showError('signup-name', 'Full name is required');
+                return;
+            }
+            if (name.length < 2) {
+                showError('signup-name', 'Name must be at least 2 characters');
+                return;
+            }
+            if (!email) {
+                showError('signup-email', 'Email is required');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError('signup-email', 'Invalid email format');
+                return;
+            }
+            if (!password) {
+                showError('signup-password', 'Password is required');
+                return;
+            }
+            if (password.length < 6) {
+                showError('signup-password', 'Password must be at least 6 characters');
+                return;
+            }
+            if (password !== confirm) {
+                showError('signup-confirm', 'Passwords do not match');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+
+            try {
+                const response = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'signup', name, email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('Account created! Please sign in...');
+                    setTimeout(() => {
+                        switchTab('signin');
+                        document.getElementById('signin-email').value = email;
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>Create Account';
+                    }, 1500);
+                } else {
+                    showError('signup-email', data.error || 'Sign up failed');
+                }
+            } catch (error) {
+                showError('signup-email', error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-user-plus"></i>Create Account';
+            }
+        }
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('heang_token');
+            if (token) {
+                window.location.href = '/index.html';
+            }
+        });
+
+        // Allow Enter key to submit
+        document.getElementById('signin-form').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSignIn();
+        });
+        document.getElementById('signup-form').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSignUp();
+        });
+    </script>
+</body>
+</html>

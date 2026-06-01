@@ -6,6 +6,14 @@
       "use": "@vercel/static"
     },
     {
+      "src": "auth.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "admin.html",
+      "use": "@vercel/static"
+    },
+    {
       "src": "public/**",
       "use": "@vercel/static"
     },
@@ -16,6 +24,16 @@
   ],
   "routes": [
     {
+      "src": "/api/auth$",
+      "dest": "/api/auth.js",
+      "methods": ["POST", "OPTIONS"]
+    },
+    {
+      "src": "/api/users$",
+      "dest": "/api/users.js",
+      "methods": ["GET", "PUT", "OPTIONS"]
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
@@ -24,8 +42,16 @@
       "dest": "/public/$1"
     },
     {
-      "src": "/(.*)\\.(webp|png|jpg|jpeg|gif|svg|ico|txt|css|js|json)",
-      "dest": "/public/$1.$2"
+      "src": "/auth\\.html",
+      "dest": "/auth.html"
+    },
+    {
+      "src": "/admin\\.html",
+      "dest": "/admin.html"
+    },
+    {
+      "src": "/(.*)\\.(webp|png|jpg|jpeg|gif|svg|ico|txt|css|js|json|html)",
+      "dest": "/$1.$2"
     },
     {
       "src": "/(.*)",
