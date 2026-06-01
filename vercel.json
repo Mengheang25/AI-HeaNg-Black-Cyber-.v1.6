@@ -1,10 +1,5 @@
 {
   "version": 2,
-  "env": {
-    "OPENROUTER_API_KEY": "@openrouter_api_key",
-    "ALLOWED_ORIGIN": "*",
-    "NODE_ENV": "production"
-  },
   "builds": [
     {
       "src": "api/**/*.js",
