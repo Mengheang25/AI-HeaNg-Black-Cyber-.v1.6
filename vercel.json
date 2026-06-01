@@ -1,146 +1,45 @@
 {
   "version": 2,
-  "projectSettings": {
-    "buildCommand": "echo 'Static site - no build needed'",
-    "outputDirectory": ".",
-    "nodeVersion": "18.x"
+  "env": {
+    "OPENROUTER_API_KEY": "@openrouter_api_key",
+    "ALLOWED_ORIGIN": "*",
+    "NODE_ENV": "production"
   },
   "builds": [
     {
-      "src": "index.html",
-      "use": "@vercel/static",
-      "config": { "zeroConfig": true }
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     },
     {
       "src": "public/**",
-      "use": "@vercel/static",
-      "config": { "zeroConfig": true }
+      "use": "@vercel/static"
     },
     {
-      "src": "api/**/*.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxDuration": 60,
-        "memory": 1024,
-        "zeroConfig": true
-      }
+      "src": "*.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/api/security-log$",
-      "dest": "/api/security-log.js",
-      "methods": ["POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/proxy$",
-      "dest": "/api/proxy.js",
-      "methods": ["POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/auth$",
-      "dest": "/api/auth.js",
-      "methods": ["POST", "OPTIONS"]
-    },
-    {
-      "src": "/api/users$",
-      "dest": "/api/users.js",
-      "methods": ["GET", "PUT", "DELETE", "OPTIONS"]
-    },
-    {
-      "src": "/api/logs$",
-      "dest": "/api/logs.js",
-      "methods": ["GET", "OPTIONS"]
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "/api/$1",
-      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+      "dest": "/api/$1"
     },
     {
-      "src": "/public/(.*)\\.(webp|png|jpg|jpeg|gif|svg|ico)$",
-      "dest": "/public/$1.$2",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
     },
     {
-      "src": "/public/(.*)\\.(js|css|json)$",
-      "dest": "/public/$1.$2",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(.*)\\.(webp|png|jpg|jpeg|gif|svg|ico|txt|woff2|woff|ttf)$",
-      "dest": "/$1.$2",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(.*)\\.(html|css|js|json)$",
-      "dest": "/$1.$2",
-      "headers": {
-        "cache-control": "public, max-age=3600, must-revalidate"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html",
-      "headers": {
-        "cache-control": "no-cache, no-store, must-revalidate"
-      }
+      "src": "/(?!api|public).*",
+      "dest": "/index.html"
     }
   ],
   "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json; charset=utf-8"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization, X-Session-Token, X-Client-Fingerprint"
-        },
-        {
-          "key": "Access-Control-Max-Age",
-          "value": "86400"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "SAMEORIGIN"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Strict-Transport-Security",
-          "value": "max-age=31536000; includeSubDomains"
+          "value": "max-age=63072000; includeSubDomains; preload"
         },
         {
           "key": "X-Content-Type-Options",
@@ -161,10 +60,27 @@
         {
           "key": "Permissions-Policy",
           "value": "geolocation=(), microphone=(), camera=(), payment=()"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
         },
         {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://* wss://*; media-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';"
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-Session-Token, X-Client-Fingerprint"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json"
         }
       ]
     },
@@ -173,59 +89,18 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate, public, max-age=0"
-        },
-        {
-          "key": "Pragma",
-          "value": "no-cache"
-        },
-        {
-          "key": "Expires",
-          "value": "0"
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     },
     {
-      "source": "/system_prompt.txt",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, must-revalidate"
-        },
-        {
-          "key": "Content-Type",
-          "value": "text/plain; charset=utf-8"
-        }
-      ]
-    },
-    {
-      "source": "/public/security.js",
+      "source": "/public/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
-        },
-        {
-          "key": "Content-Type",
-          "value": "application/javascript; charset=utf-8"
         }
       ]
-    }
-  ],
-  "env": [
-    {
-      "key": "OPENROUTER_API_KEY",
-      "description": "OpenRouter API Key for AI model access"
-    },
-    {
-      "key": "ALLOWED_ORIGIN",
-      "description": "Allowed CORS origin for API requests",
-      "value": "*"
-    },
-    {
-      "key": "NODE_ENV",
-      "description": "Node environment",
-      "value": "production"
     }
   ]
 }
