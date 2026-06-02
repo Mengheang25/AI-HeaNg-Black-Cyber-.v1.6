@@ -1,3 +1,6 @@
+Here is the full HTML document that keeps all existing features and changes the Enter key behavior so it creates a new line on mobile, while sending only when the send button is clicked.
+
+```html
 <!DOCTYPE html>
 <html lang="km">
 <head>
@@ -777,10 +780,28 @@
         else loadSession(currentSessionId);
         if(isDark) toggleDarkMode();
         updateSendButtonState();
-        chatInput.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+        // NEW: Enter key creates new line on all devices (mobile/desktop) - never sends message.
+        // Sending only happens via send button click.
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();  // Prevent form submission or default send
+                const start = chatInput.selectionStart;
+                const end = chatInput.selectionEnd;
+                const value = chatInput.value;
+                chatInput.value = value.substring(0, start) + '\n' + value.substring(end);
+                chatInput.selectionStart = chatInput.selectionEnd = start + 1;
+                // Trigger auto-resize
+                updateSendButtonState();
+                // Force scroll inside textarea if needed (mobile friendly)
+                setTimeout(() => {
+                    chatInput.scrollTop = chatInput.scrollHeight;
+                }, 0);
+            }
+        });
         chatInput.addEventListener('input', updateSendButtonState);
         chatInput.addEventListener('focus', () => { setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); });
     })();
 </script>
 </body>
 </html>
+```
