@@ -177,7 +177,7 @@
             }
             #chatContainer {
                 padding: 12px 10px !important;
-                padding-bottom: 150px !important;
+                padding-bottom: 160px !important;
                 flex: 1;
             }
             footer {
@@ -186,8 +186,8 @@
                 left: 0 !important;
                 right: 0 !important;
                 width: 100% !important;
-                padding: 8px 12px !important;
-                padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+                padding: 10px 12px !important;
+                padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
                 gap: 8px !important;
                 display: flex !important;
                 flex-direction: column !important;
@@ -218,17 +218,13 @@
             #chat-input {
                 min-height: 38px !important;
                 max-height: 110px !important;
-                font-size: 16px !important;
+                font-size: 15px !important;
             }
             .chat-section {
                 position: relative;
                 height: 100vh;
                 display: flex;
                 flex-direction: column;
-                overflow: hidden;
-            }
-            html, body {
-                height: 100%;
                 overflow: hidden;
             }
         }
@@ -308,9 +304,6 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
-        #ai-typing {
-            transition: all 0.1s ease;
-        }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-gray-100 antialiased">
@@ -333,6 +326,7 @@
             <button id="new-chat-btn" onclick="createNewChatSession(); if(window.innerWidth<1024) toggleSidebar();" class="w-full bg-black text-white py-3 rounded-full font-medium flex items-center justify-center gap-2 mb-6 hover:bg-gray-800 transition shadow-sm">
                 <i class="fa-solid fa-square-plus text-sm"></i> <span>New Chat</span>
             </button>
+            <!-- Get buy source code - direct Telegram link -->
             <button onclick="window.open('https://t.me/mengheang25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition mb-1">
                 <div id="api-badge" class="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-paper-plane -rotate-12"></i></div>
                 <span class="font-medium text-sm">Get buy source code</span>
@@ -349,7 +343,9 @@
                 <div class="flex items-center gap-3"><i id="mode-icon" class="fa-regular fa-moon text-lg w-5"></i><span id="mode-text" class="font-medium text-sm">Dark mode</span></div>
                 <div id="toggle-switch-bg" class="w-9 h-5 bg-gray-200 rounded-full p-0.5 transition-all flex items-center"><div id="toggle-switch-circle" class="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform"></div></div>
             </button>
+            <!-- Telegram direct link -->
             <button onclick="window.open('https://t.me/mengheang25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-brands fa-telegram text-xl w-5"></i><span class="font-medium text-sm">Telegram</span></button>
+            <!-- Group direct link -->
             <button onclick="window.open('https://t.me/cyberkid25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-solid fa-comment-dots text-lg w-5"></i><span class="font-medium text-sm">Channel</span></button>
             <button onclick="clearAllChats()" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-regular fa-trash-can text-lg w-5"></i><span class="font-medium text-sm">Clear all chats</span></button>
         </div>
@@ -365,7 +361,7 @@
                     <img src="public/worm.png" alt="Worm Logo" class="w-6 h-6 rounded-full object-cover" onerror="this.src='https://placehold.co/24x24?text=🐛'">
                     <div>
                         <h1 id="header-title" class="text-[17px] font-semibold text-gray-900 leading-tight">HeaNg[Black-Cyber]</h1>
-                        <div id="version-badge" class="inline-flex items-center bg-gray-100 px-2.5 py-0.5 rounded-full mt-0.5"><span class="text-[11px] font-bold text-gray-700">by @mengheang25 V1.6</span></div>
+                        <div id="version-badge" class="inline-flex items-center bg-gray-100 px-2.5 py-0.5 rounded-full mt-0.5"><span class="text-[11px] font-bold text-gray-700">by @mengheang25 V1.5</span></div>
                     </div>
                 </div>
             </div>
@@ -374,10 +370,11 @@
 
         <div id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 transition-colors no-scrollbar" style="padding-bottom: 100px;">
             <div id="greeting-wrapper" class="h-full flex flex-col items-center justify-center min-h-[280px]">
+                <!-- Logo container without bg-white class - pure transparent background -->
                 <div class="w-14 h-14 mb-3 rounded-full overflow-hidden shadow-md flex items-center justify-center logo-pulse">
                     <img src="public/worm.png" alt="Worm Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/56x56?text=🐛'">
                 </div>
-                <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.6 is a powerful and ruthless AI chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
+                <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.5 is a powerful and ruthless Al chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
             </div>
         </div>
 
@@ -403,8 +400,9 @@
 
 <script>
     // ======================== CONFIGURATION =========================
-    // API calls go to backend (Vercel serverless function) - API key is hidden on server side
-    const API_ENDPOINT = '/api/chat';
+    const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
+    const API_KEY = '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';
+    const MODEL_NAME = 'deepseek/deepseek-v4-flash';
     
     let systemPromptCache = "You are HeaNg[Black-Cyber] V1.5, a clever, edgy AI assistant. Respond with precision and a dash of cyberpunk confidence. Use markdown, code blocks, stories, letters style.";
     let currentSessionId = localStorage.getItem('heang_session_id') || null;
@@ -554,8 +552,6 @@
     
     function showTypingIndicator() {
         removeGreeting();
-        let existing = document.getElementById('ai-typing');
-        if(existing) existing.remove();
         const div = document.createElement('div');
         div.id = 'ai-typing';
         div.className = 'flex justify-start items-center gap-2 text-gray-500 text-sm italic px-2 py-1';
@@ -578,61 +574,41 @@
         renderRecentList();
         
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 120000);
-            
-            const resp = await fetch(API_ENDPOINT, {
+            const resp = await fetch(OPENROUTER_ENDPOINT, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    messages: conversationHistory.map(m => ({ role: m.role, content: m.content })),
-                    temperature: 0.75,
-                    stream: true 
-                }),
-                signal: controller.signal
+                headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: MODEL_NAME, messages: conversationHistory.map(m => ({ role: m.role, content: m.content })), temperature: 0.75, stream: true })
             });
-            
-            clearTimeout(timeoutId);
-            
-            if(!resp.ok) {
-                let errorMsg = `API ${resp.status}`;
-                try {
-                    const errorData = await resp.json();
-                    errorMsg = errorData.error || errorData.message || errorMsg;
-                } catch(e) {}
-                throw new Error(errorMsg);
-            }
-            
+            if(!resp.ok) throw new Error(`API ${resp.status}`);
             const reader = resp.body.getReader();
             const decoder = new TextDecoder();
             let full = '';
-            let buffer = '';
-            
+            let lastChunkTime = 0;
             while(true) {
                 const { done, value } = await reader.read();
                 if(done) break;
-                const chunk = decoder.decode(value, { stream: true });
-                buffer += chunk;
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-                
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
                 for(const line of lines) {
                     if(line.startsWith('data: ')) {
                         const data = line.slice(6).trim();
                         if(data === '[DONE]') continue;
                         try {
                             const json = JSON.parse(data);
-                            const delta = json.choices?.[0]?.delta?.content || '';
+                            const delta = json.choices[0]?.delta?.content || '';
                             if(delta) {
                                 full += delta;
                                 targetBubble.innerHTML = formatCodeBlocks(full) + '<span class="streaming-cursor"></span>';
                                 continuousScrollSync();
+                                if (Date.now() - lastChunkTime > 12) {
+                                    ultraSmoothScrollToBottom();
+                                    lastChunkTime = Date.now();
+                                }
                             }
                         } catch(e) {}
                     }
                 }
             }
-            
             targetBubble.innerHTML = formatCodeBlocks(full);
             conversationHistory.push({ role: 'assistant', content: full });
             const updatedSession = allSessions.find(s => s.id === currentSessionId);
@@ -641,11 +617,8 @@
             attachCopyEvents();
             ultraSmoothScrollToBottom();
         } catch(err) {
-            console.error('Stream error:', err);
-            let errorMessage = err.message;
-            if (err.name === 'AbortError') errorMessage = 'Request timeout. Please try again.';
-            targetBubble.innerHTML = `<span class="text-red-400">⚠️ Engine overload: ${errorMessage}</span>`;
-            showToast(errorMessage, true);
+            targetBubble.innerHTML = `<span class="text-red-400">⚠️ Engine overload: ${err.message}</span>`;
+            showToast("API error", true);
             ultraSmoothScrollToBottom();
         }
     }
@@ -727,7 +700,7 @@
             <div class="w-14 h-14 mb-3 rounded-full overflow-hidden shadow-md flex items-center justify-center logo-pulse">
                 <img src="public/worm.png" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/56x56?text=🐛'">
             </div>
-            <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.6 is a powerful and ruthless AI chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
+            <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.5 is a powerful and ruthless Al chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
         </div>`;
         renderRecentList();
         showToast("New session", false);
@@ -807,13 +780,6 @@
         chatInput.addEventListener('keydown', (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
         chatInput.addEventListener('input', updateSendButtonState);
         chatInput.addEventListener('focus', () => { setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); });
-        if('visualViewport' in window) {
-            window.visualViewport.addEventListener('resize', () => {
-                if(document.activeElement === chatInput) {
-                    setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-                }
-            });
-        }
     })();
 </script>
 </body>
