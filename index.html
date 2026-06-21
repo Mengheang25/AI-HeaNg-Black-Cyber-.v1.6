@@ -47,43 +47,49 @@
         }
         @keyframes blinkCursor { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
         
-        /* Code Block Styles */
+        /* Code Block Styles - Enhanced for both Light and Dark Mode */
         .code-block-wrapper {
             margin: 0.75rem 0;
             border-radius: 16px;
             overflow: hidden;
-            border: 1px solid rgba(220,38,38,0.25);
-            background: #0a0a0c;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            border: 1px solid #e5e7eb;
+            background: #f8f9fa;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        body.dark .code-block-wrapper { 
-            border-color: #3f3f46; 
+        
+        /* Dark mode code block */
+        body.dark .code-block-wrapper {
+            border-color: #3f3f46;
             background: #0f0f12;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
+        
         .code-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, #1a1114 0%, #0f0a0c 100%);
+            background: #eef2f6;
             padding: 0.5rem 1rem;
             font-size: 0.7rem;
             font-weight: 600;
-            color: #fecdd3;
+            color: #1f2937;
             font-family: 'SF Mono', 'Fira Code', monospace;
-            border-bottom: 1px solid rgba(220,38,38,0.2);
+            border-bottom: 1px solid #e5e7eb;
         }
-        body.dark .code-header { 
+        
+        body.dark .code-header {
             background: linear-gradient(135deg, #1f1f24 0%, #18181b 100%);
             color: #e4e4e7;
             border-bottom-color: #3f3f46;
         }
+        
         .lang-badge { display: flex; align-items: center; gap: 0.5rem; }
         .lang-badge i { font-size: 0.85rem; }
+        
         .copy-btn {
-            background: rgba(220,38,38,0.15);
-            border: 1px solid rgba(220,38,38,0.4);
-            color: #fecdd3;
+            background: rgba(220,38,38,0.1);
+            border: 1px solid rgba(220,38,38,0.3);
+            color: #dc2626;
             padding: 0.25rem 0.75rem;
             border-radius: 8px;
             cursor: pointer;
@@ -107,7 +113,7 @@
             font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
             margin: 0;
             background: transparent;
-            line-height: 1.5;
+            line-height: 1.6;
             max-width: 100%;
         }
         code { 
@@ -116,22 +122,47 @@
             white-space: pre-wrap;
         }
         
+        /* ====== ENHANCED SYNTAX HIGHLIGHTING - WORKS BOTH LIGHT & DARK ====== */
+        :root {
+            --syn-keyword: #c026d3;
+            --syn-string: #059669;
+            --syn-comment: #6b7280;
+            --syn-function: #2563eb;
+            --syn-number: #7c3aed;
+            --syn-operator: #d97706;
+            --syn-variable: #65a30d;
+            --syn-class: #0891b2;
+            --syn-builtin: #dc2626;
+        }
+        
+        body.dark {
+            --syn-keyword: #ff79c6;
+            --syn-string: #50fa7b;
+            --syn-comment: #6272a4;
+            --syn-function: #8be9fd;
+            --syn-number: #bd93f9;
+            --syn-operator: #ffb86c;
+            --syn-variable: #f1fa8c;
+            --syn-class: #8be9fd;
+            --syn-builtin: #ff5555;
+        }
+        
+        .syn-keyword { color: var(--syn-keyword); font-weight: 600; }
+        .syn-string { color: var(--syn-string); }
+        .syn-comment { color: var(--syn-comment); font-style: italic; }
+        .syn-function { color: var(--syn-function); }
+        .syn-number { color: var(--syn-number); }
+        .syn-operator { color: var(--syn-operator); }
+        .syn-variable { color: var(--syn-variable); }
+        .syn-class { color: var(--syn-class); font-weight: 600; }
+        .syn-builtin { color: var(--syn-builtin); font-weight: 600; }
+        
         .bubble-content {
             word-break: break-word;
             overflow-wrap: break-word;
             max-width: 85%;
             overflow-x: auto;
         }
-        
-        /* Syntax Highlighting Colors */
-        .syn-keyword { color: #ff79c6; font-weight: 600; }
-        .syn-string { color: #50fa7b; }
-        .syn-comment { color: #6272a4; font-style: italic; }
-        .syn-function { color: #8be9fd; }
-        .syn-number { color: #bd93f9; }
-        .syn-operator { color: #ffb86c; }
-        .syn-variable { color: #f1fa8c; }
-        .syn-class { color: #8be9fd; font-weight: 600; }
         
         .bubble-content p, .bubble-content div { margin: 0.2rem 0; }
         .tag-btn { transition: all 0.15s ease; }
@@ -304,6 +335,523 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .settings-card {
+            width: 90%;
+            max-width: 450px;
+            border-radius: 32px;
+            overflow: hidden;
+        }
+
+        .image-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 20px;
+        }
+        .image-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(220,38,38,0.2);
+            border-top: 3px solid #dc2626;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .generated-image-container {
+            max-width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 4px;
+            background: #f0f0f0;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+        }
+        body.dark .generated-image-container {
+            background: #1a1a1a;
+        }
+        .generated-image-container img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1px solid rgba(220,38,38,0.15);
+            display: block;
+        }
+        .image-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .image-actions button {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(220,38,38,0.08);
+            border: 1px solid rgba(220,38,38,0.2);
+            color: #dc2626;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .image-actions button:hover {
+            background: #dc2626;
+            color: white;
+            border-color: #dc2626;
+        }
+        .image-actions button i {
+            font-size: 12px;
+        }
+        
+        .upload-preview-img {
+            max-height: 60px;
+            max-width: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #dc2626;
+        }
+        .image-upload-badge {
+            background: #dc2626;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .reference-image-in-chat {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 2px solid rgba(220,38,38,0.3);
+            margin-top: 4px;
+        }
+        .reference-label {
+            font-size: 10px;
+            color: #6b7280;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .gallery-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            padding: 20px;
+        }
+        .gallery-modal .gallery-content {
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            background: #1a1a1a;
+            border-radius: 24px;
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+        }
+        .gallery-modal .gallery-close {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 24px;
+            padding: 8px 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .gallery-modal .gallery-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .gallery-modal .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .gallery-modal .gallery-item {
+            background: #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 1;
+            cursor: pointer;
+        }
+        .gallery-modal .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .gallery-modal .gallery-item .gallery-item-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            padding: 6px;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+        .gallery-modal .gallery-item .gallery-item-actions button {
+            background: rgba(220,38,38,0.3);
+            border: 1px solid rgba(220,38,38,0.4);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .gallery-modal .gallery-item .gallery-item-actions button:hover {
+            background: #dc2626;
+        }
+        .gallery-modal .gallery-item .gallery-item-actions button i {
+            font-size: 10px;
+        }
+        .gallery-modal .empty-gallery {
+            color: #6b7280;
+            text-align: center;
+            padding: 40px;
+            font-size: 14px;
+        }
+        .gallery-modal .gallery-item .delete-image-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(220,38,38,0.8);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gallery-modal .gallery-item .delete-image-btn:hover {
+            background: #dc2626;
+        }
+        .gallery-modal .gallery-item {
+            cursor: pointer;
+        }
+        
+        .gallery-loading {
+            color: #6b7280;
+            text-align: center;
+            padding: 40px;
+        }
+        .gallery-loading .spinner-small {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(220,38,38,0.2);
+            border-top: 3px solid #dc2626;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(12px);
+            padding: 20px;
+            cursor: default;
+            overflow: hidden;
+        }
+        .preview-modal.active {
+            display: flex;
+        }
+        .preview-modal .preview-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 92vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: default;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .preview-modal .preview-image-wrapper {
+            overflow: hidden;
+            border-radius: 16px;
+            max-width: 100%;
+            max-height: 82vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            touch-action: none;
+        }
+        .preview-modal .preview-image-wrapper:active {
+            cursor: grabbing;
+        }
+        .preview-modal .preview-image-wrapper img {
+            max-width: 100%;
+            max-height: 82vh;
+            object-fit: contain;
+            border-radius: 16px;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.05s ease-out;
+            transform-origin: center center;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        .preview-modal .preview-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            padding: 8px 14px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+        }
+        .preview-modal .preview-controls button {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-modal .preview-controls button:hover {
+            background: rgba(255,255,255,0.18);
+            transform: scale(1.05);
+        }
+        .preview-modal .preview-controls .zoom-level {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            font-weight: 500;
+            min-width: 44px;
+            text-align: center;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        .preview-modal .preview-controls .close-btn {
+            background: #dc2626;
+            border-color: #dc2626;
+            width: 38px;
+            height: 38px;
+            font-size: 16px;
+        }
+        .preview-modal .preview-controls .close-btn:hover {
+            background: #b91c1c;
+            transform: scale(1.08);
+        }
+        .preview-modal .preview-controls .download-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-modal .preview-controls .download-btn:hover {
+            background: rgba(255,255,255,0.18);
+            transform: scale(1.05);
+        }
+        @media (max-width: 640px) {
+            .preview-modal .preview-controls {
+                bottom: 16px;
+                padding: 6px 10px;
+                gap: 6px;
+            }
+            .preview-modal .preview-controls button {
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
+            }
+            .preview-modal .preview-controls .close-btn {
+                width: 34px;
+                height: 34px;
+            }
+            .preview-modal .preview-controls .download-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
+            }
+            .preview-modal .preview-image-wrapper img {
+                max-height: 70vh;
+            }
+            .preview-modal .preview-image-wrapper {
+                max-height: 70vh;
+            }
+            .preview-modal .preview-controls .zoom-level {
+                min-width: 36px;
+                font-size: 11px;
+            }
+        }
+        
+        .code-block-wrapper pre code {
+            color: #1f2937;
+        }
+        body.dark .code-block-wrapper pre code {
+            color: #e4e4e7;
+        }
+        
+        .code-block-wrapper .syn-keyword { color: #c026d3; font-weight: 600; }
+        .code-block-wrapper .syn-string { color: #059669; }
+        .code-block-wrapper .syn-comment { color: #6b7280; font-style: italic; }
+        .code-block-wrapper .syn-function { color: #2563eb; }
+        .code-block-wrapper .syn-number { color: #7c3aed; }
+        .code-block-wrapper .syn-operator { color: #d97706; }
+        .code-block-wrapper .syn-variable { color: #65a30d; }
+        .code-block-wrapper .syn-class { color: #0891b2; font-weight: 600; }
+        .code-block-wrapper .syn-builtin { color: #dc2626; font-weight: 600; }
+        
+        body.dark .code-block-wrapper .syn-keyword { color: #ff79c6; }
+        body.dark .code-block-wrapper .syn-string { color: #50fa7b; }
+        body.dark .code-block-wrapper .syn-comment { color: #6272a4; }
+        body.dark .code-block-wrapper .syn-function { color: #8be9fd; }
+        body.dark .code-block-wrapper .syn-number { color: #bd93f9; }
+        body.dark .code-block-wrapper .syn-operator { color: #ffb86c; }
+        body.dark .code-block-wrapper .syn-variable { color: #f1fa8c; }
+        body.dark .code-block-wrapper .syn-class { color: #8be9fd; }
+        body.dark .code-block-wrapper .syn-builtin { color: #ff5555; }
+
+        /* Control button styles */
+        .control-btn {
+            transition: all 0.2s ease;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .control-btn i {
+            font-size: 16px;
+        }
+        .control-btn.pause-btn {
+            background: #f59e0b;
+            color: white;
+        }
+        .control-btn.pause-btn:hover {
+            background: #d97706;
+            transform: scale(1.05);
+        }
+        .control-btn.stop-btn {
+            background: #dc2626;
+            color: white;
+        }
+        .control-btn.stop-btn:hover {
+            background: #b91c1c;
+            transform: scale(1.05);
+        }
+        .control-btn.continue-btn {
+            background: #10b981;
+            color: white;
+        }
+        .control-btn.continue-btn:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+        .control-btn.send-btn {
+            background: #dc2626;
+            color: white;
+        }
+        .control-btn.send-btn:hover {
+            background: #b91c1c;
+            transform: scale(1.05);
+        }
+        .control-btn.send-btn.disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .control-btn.send-btn.disabled:hover {
+            transform: none;
+        }
+        #control-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        #pause-continue-btn {
+            display: none;
+        }
+        #stop-btn {
+            display: none;
+        }
+        #send-btn {
+            display: flex;
+        }
+        .control-btn i.fa-pause, .control-btn i.fa-play {
+            font-size: 14px;
+        }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden bg-gray-100 antialiased">
@@ -323,15 +871,21 @@
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                 <input type="text" id="sidebar-search" oninput="filterChats()" placeholder="Search chats..." class="w-full bg-gray-100 pl-10 pr-4 py-2.5 rounded-xl text-sm focus:outline-none text-gray-700">
             </div>
-            <button id="new-chat-btn" onclick="createNewChatSession(); if(window.innerWidth<1024) toggleSidebar();" class="w-full bg-black text-white py-3 rounded-full font-medium flex items-center justify-center gap-2 mb-6 hover:bg-gray-800 transition shadow-sm">
+            <button id="new-chat-btn" onclick="createNewChatSession(); if(window.innerWidth<1024) toggleSidebar();" class="w-full bg-black text-white py-3 rounded-full font-medium flex items-center justify-center gap-2 mb-4 hover:bg-gray-800 transition shadow-sm">
                 <i class="fa-solid fa-square-plus text-sm"></i> <span>New Chat</span>
             </button>
-            <!-- Get buy source code - direct Telegram link -->
-            <button onclick="window.open('https://t.me/mengheang25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition mb-1">
-                <div id="api-badge" class="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-paper-plane -rotate-12"></i></div>
-                <span class="font-medium text-sm">Get buy source code</span>
+            
+            <button onclick="openSettingsModal()" class="w-full flex items-center gap-3 px-2 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition mb-1">
+                <div class="bg-black text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-gear"></i></div>
+                <span class="font-medium text-sm">Enter Your (API Key)</span>
             </button>
-            <div class="mt-6 flex-1 flex flex-col overflow-hidden">
+            
+            <button onclick="openGalleryModal()" class="w-full flex items-center gap-3 px-2 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition mb-1">
+                <div class="bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]"><i class="fa-regular fa-images"></i></div>
+                <span class="font-medium text-sm">Your Image <span id="image-count-badge" class="bg-rose-100 text-rose-600 text-xs px-2 py-0.5 rounded-full ml-auto">0</span></span>
+            </button>
+            
+            <div class="mt-4 flex-1 flex flex-col overflow-hidden">
                 <span class="text-gray-400 font-semibold text-xs tracking-wider mb-2">📁 RECENT CHATS</span>
                 <div id="recent-chats-container" class="flex-1 overflow-y-auto space-y-1 pr-1 no-scrollbar text-sm">
                     <div class="text-gray-400 italic px-1 text-xs">No historical logs</div>
@@ -343,9 +897,7 @@
                 <div class="flex items-center gap-3"><i id="mode-icon" class="fa-regular fa-moon text-lg w-5"></i><span id="mode-text" class="font-medium text-sm">Dark mode</span></div>
                 <div id="toggle-switch-bg" class="w-9 h-5 bg-gray-200 rounded-full p-0.5 transition-all flex items-center"><div id="toggle-switch-circle" class="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform"></div></div>
             </button>
-            <!-- Telegram direct link -->
             <button onclick="window.open('https://t.me/mengheang25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-brands fa-telegram text-xl w-5"></i><span class="font-medium text-sm">Telegram</span></button>
-            <!-- Group direct link -->
             <button onclick="window.open('https://t.me/cyberkid25', '_blank')" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-solid fa-comment-dots text-lg w-5"></i><span class="font-medium text-sm">Channel</span></button>
             <button onclick="clearAllChats()" class="w-full flex items-center gap-3 px-2 py-2.5 text-gray-700 hover:bg-gray-50 rounded-xl"><i class="fa-regular fa-trash-can text-lg w-5"></i><span class="font-medium text-sm">Clear all chats</span></button>
         </div>
@@ -361,7 +913,7 @@
                     <img src="public/worm.png" alt="Worm Logo" class="w-6 h-6 rounded-full object-cover" onerror="this.src='https://placehold.co/24x24?text=🐛'">
                     <div>
                         <h1 id="header-title" class="text-[17px] font-semibold text-gray-900 leading-tight">HeaNg[Black-Cyber]</h1>
-                        <div id="version-badge" class="inline-flex items-center bg-gray-100 px-2.5 py-0.5 rounded-full mt-0.5"><span class="text-[11px] font-bold text-gray-700">by @mengheang25 V1.5</span></div>
+                        <div id="version-badge" class="inline-flex items-center bg-gray-100 px-2.5 py-0.5 rounded-full mt-0.5"><span class="text-[11px] font-bold text-gray-700">by @mengheang25 V1.6</span></div>
                     </div>
                 </div>
             </div>
@@ -370,89 +922,606 @@
 
         <div id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 transition-colors no-scrollbar" style="padding-bottom: 100px;">
             <div id="greeting-wrapper" class="h-full flex flex-col items-center justify-center min-h-[280px]">
-                <!-- Logo container without bg-white class - pure transparent background -->
                 <div class="w-14 h-14 mb-3 rounded-full overflow-hidden shadow-md flex items-center justify-center logo-pulse">
                     <img src="public/worm.png" alt="Worm Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/56x56?text=🐛'">
                 </div>
-                <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.5 is a powerful and ruthless Al chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
+                <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.6 is a powerful and ruthless Al chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️ And Generate Images.<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
             </div>
         </div>
 
         <footer class="bg-white border-t border-gray-100 shrink-0">
-            <div id="upload-preview-box" class="hidden bg-gray-50 border border-gray-200 rounded-2xl p-1.5 flex items-center justify-between gap-1 mb-1.5 mx-2">
-                <div class="flex items-center gap-2 overflow-hidden flex-1">
-                    <div class="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center shrink-0"><img id="preview-image-element" class="hidden w-full h-full object-cover rounded-xl"><i id="preview-file-icon" class="fa-regular fa-file-lines text-xl text-rose-500 hidden"></i></div>
-                    <span id="preview-file-name" class="text-gray-800 text-sm font-medium truncate">file</span>
+            <div id="image-upload-preview" class="hidden bg-gray-50 border border-gray-200 rounded-2xl p-2 flex items-center gap-3 mb-1.5 mx-2">
+                <img id="uploaded-image-preview" class="upload-preview-img" src="" alt="Uploaded image">
+                <div class="flex-1">
+                    <span id="uploaded-image-name" class="text-sm font-medium text-gray-800">image.jpg</span>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="image-upload-badge"><i class="fa-regular fa-image mr-1"></i>Reference Image</span>
+                        <span class="text-xs text-gray-500">Will be shown in chat</span>
+                    </div>
                 </div>
-                <button onclick="clearUploadedFile()" class="text-gray-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="clearUploadedImage()" class="text-gray-400 hover:text-red-500 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
+
             <div id="input-bar" class="bg-gray-100 rounded-[28px] p-1 flex items-center gap-1 mx-2 mb-2">
-                <input type="file" id="file-upload-input" class="hidden" onchange="handleFileSelect(event)">
-                <button onclick="document.getElementById('file-upload-input').click()" class="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition"><i class="fa-solid fa-paperclip rotate-45 text-lg"></i></button>
+                <input type="file" id="image-upload-input" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+                <button onclick="document.getElementById('image-upload-input').click()" class="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition" title="Upload reference image"><i class="fa-solid fa-image text-lg"></i></button>
                 <button onclick="handleButtonClick('Microphone')" class="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition"><i class="fa-solid fa-microphone text-lg"></i></button>
-                <textarea id="chat-input" rows="1" placeholder="Type a message..." class="w-full bg-transparent py-2 px-1 text-[15px] focus:outline-none placeholder-gray-400 resize-none min-h-[32px] max-h-[120px] leading-tight text-gray-800" style="overflow-wrap: break-word; word-wrap: break-word; overflow-y: auto;"></textarea>
-                <button id="send-btn" onclick="sendMessage()" class="bg-gray-300 text-white w-10 h-10 rounded-full flex items-center justify-center transition active:scale-95"><i class="fa-solid fa-arrow-up text-md"></i></button>
+                <button id="image-gen-btn" onclick="generateImage()" class="text-gray-600 hover:bg-gray-200 p-2 rounded-full transition" title="Generate Image (Alt+G)"><i class="fa-solid fa-wand-magic-sparkles text-lg"></i></button>
+                <textarea id="chat-input" rows="1" placeholder="Type a message or describe image..." class="w-full bg-transparent py-2 px-1 text-[15px] focus:outline-none placeholder-gray-400 resize-none min-h-[32px] max-h-[120px] leading-tight text-gray-800" style="overflow-wrap: break-word; word-wrap: break-word; overflow-y: auto;"></textarea>
+                <div id="control-container">
+                    <button id="pause-continue-btn" class="control-btn pause-btn" onclick="togglePauseResume()" title="Pause/Resume">
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
+                    <button id="stop-btn" class="control-btn stop-btn" onclick="stopGeneration()" title="Stop Generation">
+                        <i class="fa-solid fa-stop"></i>
+                    </button>
+                    <button id="send-btn" class="control-btn send-btn" onclick="sendMessage()" title="Send Message">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
             </div>
         </footer>
     </div>
 </div>
 <div id="toast-container" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] pointer-events-none flex flex-col gap-1"></div>
 
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" class="settings-panel hidden" onclick="if(event.target===this) closeSettingsModal()">
+    <div class="settings-card bg-white dark:bg-zinc-900 shadow-2xl">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700 flex justify-between items-center">
+            <h2 class="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2"><i class="fa-solid fa-key text-rose-500"></i> API Configuration</h2>
+            <button onclick="closeSettingsModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-white"><i class="fa-solid fa-xmark text-2xl"></i></button>
+        </div>
+        <div class="p-6">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Your API Key</label>
+            <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." class="w-full border border-gray-300 dark:border-zinc-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-rose-500 outline-none">
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Your key is stored locally in your app (localStorage). Never shared.</p>
+            <div class="flex gap-3 mt-6">
+                <button onclick="saveApiKey()" class="flex-1 bg-black dark:bg-rose-600 text-white py-2.5 rounded-xl font-medium hover:opacity-90 transition"><i class="fa-regular fa-floppy-disk mr-2"></i>Save Key</button>
+                <button onclick="editApiKey()" class="flex-1 border border-gray-300 dark:border-zinc-700 py-2.5 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-zinc-800 transition"><i class="fa-regular fa-pen-to-square mr-2"></i>Edit</button>
+            </div>
+            <div class="mt-4 text-center">
+                <span id="apiStatusBadge" class="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-gray-200 dark:bg-zinc-800 text-gray-700 dark:text-gray-300"><i class="fa-regular fa-circle-check text-green-600"></i> Not configured</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GALLERY MODAL -->
+<div id="galleryModal" class="gallery-modal hidden" onclick="if(event.target===this) closeGalleryModal()">
+    <div class="gallery-content">
+        <button class="gallery-close" onclick="closeGalleryModal()">✕</button>
+        <h2 style="color:white;font-size:20px;font-weight:600;margin-bottom:8px;"><i class="fa-regular fa-images" style="color:#dc2626;margin-right:8px;"></i>Your Generated Images</h2>
+        <p style="color:#6b7280;font-size:13px;margin-bottom:12px;">Click on any image to view full size</p>
+        <div id="gallery-grid" class="gallery-grid">
+            <div class="gallery-loading">
+                <div class="spinner-small"></div>
+                Loading images...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div id="previewModal" class="preview-modal" onclick="closePreview()">
+    <div class="preview-content" onclick="event.stopPropagation()">
+        <div class="preview-image-wrapper" id="previewWrapper">
+            <img id="previewImage" src="" alt="Image Preview">
+        </div>
+        <div class="preview-controls">
+            <button onclick="zoomOut()" title="Zoom Out"><i class="fa-solid fa-minus"></i></button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button onclick="zoomIn()" title="Zoom In"><i class="fa-solid fa-plus"></i></button>
+            <button onclick="resetZoom()" title="Reset Zoom"><i class="fa-solid fa-expand"></i></button>
+            <button class="download-btn" onclick="downloadPreviewImage()" title="Download Image"><i class="fa-solid fa-download"></i></button>
+            <button class="close-btn" onclick="closePreview()" title="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+    </div>
+</div>
+
 <script>
+    // ======================== INDEXEDDB HELPERS =========================
+    const DB_NAME = 'HeaNgImageDB';
+    const STORE_NAME = 'images';
+    let db = null;
+    let dbReady = false;
+    
+    function openDatabase() {
+        return new Promise((resolve, reject) => {
+            if (db && dbReady) {
+                resolve(db);
+                return;
+            }
+            const request = indexedDB.open(DB_NAME, 1);
+            request.onupgradeneeded = function(e) {
+                const database = e.target.result;
+                if (!database.objectStoreNames.contains(STORE_NAME)) {
+                    const store = database.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                    store.createIndex('timestamp', 'timestamp', { unique: false });
+                }
+            };
+            request.onsuccess = function(e) {
+                db = e.target.result;
+                dbReady = true;
+                resolve(db);
+            };
+            request.onerror = function(e) {
+                reject(e.target.error);
+            };
+        });
+    }
+    
+    async function saveImageToDB(dataUrl) {
+        try {
+            const database = await openDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const entry = {
+                    dataUrl: dataUrl,
+                    timestamp: Date.now()
+                };
+                const request = store.add(entry);
+                request.onsuccess = function() {
+                    resolve(request.result);
+                };
+                request.onerror = function() {
+                    reject(request.error);
+                };
+            });
+        } catch (err) {
+            console.error('Failed to save image to IndexedDB:', err);
+            throw err;
+        }
+    }
+    
+    async function getAllImagesFromDB() {
+        try {
+            const database = await openDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const index = store.index('timestamp');
+                const request = index.openCursor(null, 'prev');
+                const results = [];
+                request.onsuccess = function(e) {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        results.push(cursor.value);
+                        cursor.continue();
+                    } else {
+                        resolve(results);
+                    }
+                };
+                request.onerror = function() {
+                    reject(request.error);
+                };
+            });
+        } catch (err) {
+            console.error('Failed to get images from IndexedDB:', err);
+            return [];
+        }
+    }
+    
+    async function deleteImageFromDB(id) {
+        try {
+            const database = await openDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.delete(id);
+                request.onsuccess = function() {
+                    resolve();
+                };
+                request.onerror = function() {
+                    reject(request.error);
+                };
+            });
+        } catch (err) {
+            console.error('Failed to delete image from IndexedDB:', err);
+            throw err;
+        }
+    }
+    
+    async function clearAllImagesFromDB() {
+        try {
+            const database = await openDatabase();
+            return new Promise((resolve, reject) => {
+                const transaction = database.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.clear();
+                request.onsuccess = function() {
+                    resolve();
+                };
+                request.onerror = function() {
+                    reject(request.error);
+                };
+            });
+        } catch (err) {
+            console.error('Failed to clear images from IndexedDB:', err);
+            throw err;
+        }
+    }
+    
+    async function countImagesInDB() {
+        try {
+            const images = await getAllImagesFromDB();
+            return images.length;
+        } catch (err) {
+            return 0;
+        }
+    }
+    
+    // ======================== SESSION STORAGE WITH SIZE LIMIT HANDLING =========================
+    function saveSessionsToStorage(sessions) {
+        try {
+            localStorage.setItem('heang_sessions', JSON.stringify(sessions));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('Storage quota exceeded, attempting to compress sessions...');
+                try {
+                    const cleanSessions = sessions.map(s => ({
+                        ...s,
+                        history: s.history ? s.history.map(m => ({
+                            role: m.role,
+                            content: m.content || '',
+                            imageUrl: undefined,
+                            file: undefined,
+                            referenceImage: undefined
+                        })) : []
+                    }));
+                    localStorage.setItem('heang_sessions', JSON.stringify(cleanSessions));
+                } catch (e2) {
+                    console.warn('Still quota exceeded, limiting to 5 sessions...');
+                    const limited = sessions.slice(0, 5);
+                    const cleanLimited = limited.map(s => ({
+                        ...s,
+                        history: s.history ? s.history.map(m => ({
+                            role: m.role,
+                            content: m.content || '',
+                            imageUrl: undefined,
+                            file: undefined,
+                            referenceImage: undefined
+                        })) : []
+                    }));
+                    try {
+                        localStorage.setItem('heang_sessions', JSON.stringify(cleanLimited));
+                        showToast('⚠️ Storage limited - old chats trimmed', false);
+                    } catch(e3) {
+                        localStorage.removeItem('heang_sessions');
+                        localStorage.setItem('heang_sessions', JSON.stringify(cleanLimited.slice(0, 3)));
+                        showToast('⚠️ Storage reset - only 3 chats kept', false);
+                    }
+                }
+            }
+        }
+    }
+    
     // ======================== CONFIGURATION =========================
     const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
-    const API_KEY = 'your_api_key';
-    const MODEL_NAME = 'deepseek/deepseek-v4-flash';
+    let MODEL_NAME = 'deepseek/deepseek-v4-flash';
+    let API_KEY = localStorage.getItem('heang_api_key') || '';
     
-    let systemPromptCache = "You are HeaNg[Black-Cyber] V1.5, a clever, edgy AI assistant. Respond with precision and a dash of cyberpunk confidence. Use markdown, code blocks, stories, letters style.";
+    let systemPromptCache = "You are HeaNg[Black-Cyber] V1.6, a clever, edgy AI assistant. Respond with precision and a dash of cyberpunk confidence. Use markdown, code blocks, stories, letters style.";
     let currentSessionId = localStorage.getItem('heang_session_id') || null;
-    let allSessions = JSON.parse(localStorage.getItem('heang_sessions') || '[]');
+    let allSessions = [];
+    
+    try {
+        const stored = localStorage.getItem('heang_sessions');
+        allSessions = stored ? JSON.parse(stored) : [];
+    } catch(e) {
+        console.warn('Failed to load sessions, starting fresh');
+        allSessions = [];
+        localStorage.removeItem('heang_sessions');
+    }
+    
     let conversationHistory = [];
     let activeFile = null;
+    let uploadedImageData = null;
+    let uploadedImageName = '';
     let isStreaming = false;
+    let isPaused = false;
+    let isStopped = false;
     let isDark = localStorage.getItem('heang_dark') === 'true';
     let scrollFrame = null;
+    let currentPreviewImageUrl = '';
+    let currentReader = null;
+    let currentController = null;
+    let accumulatedContent = '';
+    let targetBubbleRef = null;
+    let fullContent = '';
+    let isGenerationActive = false;
     
-    // DOM elements
+    let currentZoom = 1;
+    let minZoom = 0.5;
+    let maxZoom = 5;
+    let zoomStep = 0.1;
+    
     const chatContainer = document.getElementById('chatContainer');
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
+    const pauseContinueBtn = document.getElementById('pause-continue-btn');
+    const stopBtn = document.getElementById('stop-btn');
     const recentContainer = document.getElementById('recent-chats-container');
-    const previewBox = document.getElementById('upload-preview-box');
-    const previewImg = document.getElementById('preview-image-element');
-    const previewFileIcon = document.getElementById('preview-file-icon');
-    const previewNameSpan = document.getElementById('preview-file-name');
     const sidebarSearch = document.getElementById('sidebar-search');
+    const imageUploadPreview = document.getElementById('image-upload-preview');
+    const uploadedImagePreview = document.getElementById('uploaded-image-preview');
+    const uploadedImageNameEl = document.getElementById('uploaded-image-name');
     
-    // ======================== HYPER SMOOTH SCROLL (RAF) =================
-    let isScrollingScheduled = false;
+    // ======================== API KEY HELPERS =========================
+    function updateApiStatusUI() {
+        const badge = document.getElementById('apiStatusBadge');
+        if(!badge) return;
+        if(API_KEY && API_KEY.trim() !== '') {
+            badge.innerHTML = '<i class="fa-regular fa-circle-check text-green-600"></i> API Key saved (active)';
+            badge.classList.remove('bg-gray-200', 'dark:bg-zinc-800');
+            badge.classList.add('bg-green-100', 'dark:bg-green-900/30', 'text-green-800', 'dark:text-green-300');
+        } else {
+            badge.innerHTML = '<i class="fa-regular fa-circle-exclamation text-amber-500"></i> No API Key → Click Settings';
+            badge.classList.remove('bg-green-100', 'dark:bg-green-900/30');
+            badge.classList.add('bg-gray-200', 'dark:bg-zinc-800', 'text-gray-700');
+        }
+    }
+    
+    function openSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        const inputField = document.getElementById('apiKeyInput');
+        if(inputField) inputField.value = API_KEY || '';
+        modal.classList.remove('hidden');
+    }
+    
+    function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
+    
+    function saveApiKey() {
+        const newKey = document.getElementById('apiKeyInput').value.trim();
+        if(newKey) {
+            API_KEY = newKey;
+            localStorage.setItem('heang_api_key', API_KEY);
+            showToast("✅ API Key saved securely", false);
+            updateApiStatusUI();
+            closeSettingsModal();
+        } else {
+            showToast("❌ Please enter a valid API Key", true);
+        }
+    }
+    
+    function editApiKey() {
+        const inputField = document.getElementById('apiKeyInput');
+        inputField.value = '';
+        inputField.focus();
+        showToast("✏️ Enter new API Key then click Save", false);
+    }
+    
+    // ======================== GALLERY FUNCTIONS =========================
+    async function updateImageCountBadge() {
+        const badge = document.getElementById('image-count-badge');
+        if(badge) {
+            try {
+                const count = await countImagesInDB();
+                badge.textContent = count;
+            } catch(e) {
+                badge.textContent = '?';
+            }
+        }
+    }
+    
+    async function openGalleryModal() {
+        const modal = document.getElementById('galleryModal');
+        modal.classList.remove('hidden');
+        await renderGallery();
+    }
+    
+    function closeGalleryModal() {
+        document.getElementById('galleryModal').classList.add('hidden');
+    }
+    
+    async function renderGallery() {
+        const grid = document.getElementById('gallery-grid');
+        try {
+            const images = await getAllImagesFromDB();
+            if(images.length === 0) {
+                grid.innerHTML = `<div class="empty-gallery">No images generated yet.<br>Use the <strong>✨ Generate Image</strong> button to create some!</div>`;
+                return;
+            }
+            grid.innerHTML = '';
+            images.forEach((img) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.innerHTML = `
+                    <img src="${img.dataUrl}" alt="Generated image" onclick="openPreview('${img.dataUrl}')">
+                    <button class="delete-image-btn" onclick="event.stopPropagation(); deleteImageFromGallery(${img.id})" title="Delete this image">✕</button>
+                    <div class="gallery-item-actions">
+                        <button onclick="event.stopPropagation(); downloadImage('${img.dataUrl}')"><i class="fa-solid fa-download"></i> Download</button>
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+        } catch(err) {
+            grid.innerHTML = `<div class="empty-gallery">Error loading images: ${err.message}</div>`;
+        }
+    }
+    
+    async function deleteImageFromGallery(id) {
+        if(confirm('Delete this image?')) {
+            try {
+                await deleteImageFromDB(id);
+                await updateImageCountBadge();
+                await renderGallery();
+                showToast('Image deleted', false);
+            } catch(err) {
+                showToast('Failed to delete image', true);
+            }
+        }
+    }
+    
+    async function saveImageToGallery(dataUrl) {
+        try {
+            await saveImageToDB(dataUrl);
+            await updateImageCountBadge();
+        } catch(err) {
+            console.error('Failed to save image to gallery:', err);
+            showToast('Failed to save image to gallery', true);
+        }
+    }
+    
+    // ======================== PREVIEW FUNCTIONS WITH ZOOM =========================
+    function openPreview(imageUrl) {
+        if (!imageUrl) return;
+        currentPreviewImageUrl = imageUrl;
+        const modal = document.getElementById('previewModal');
+        const img = document.getElementById('previewImage');
+        img.src = imageUrl;
+        img.style.transform = 'scale(1)';
+        currentZoom = 1;
+        updateZoomLevel();
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closePreview() {
+        document.getElementById('previewModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        resetZoom();
+    }
+    
+    function downloadPreviewImage() {
+        if (currentPreviewImageUrl) {
+            downloadImage(currentPreviewImageUrl);
+        }
+    }
+    
+    function updateZoomLevel() {
+        const img = document.getElementById('previewImage');
+        img.style.transform = `scale(${currentZoom})`;
+        document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+    }
+    
+    function zoomIn() {
+        if (currentZoom < maxZoom) {
+            currentZoom = Math.min(currentZoom + zoomStep, maxZoom);
+            updateZoomLevel();
+        }
+    }
+    
+    function zoomOut() {
+        if (currentZoom > minZoom) {
+            currentZoom = Math.max(currentZoom - zoomStep, minZoom);
+            updateZoomLevel();
+        }
+    }
+    
+    function resetZoom() {
+        currentZoom = 1;
+        updateZoomLevel();
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const previewWrapper = document.getElementById('previewWrapper');
+        
+        previewWrapper.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
+            }
+        }, { passive: false });
+        
+        let lastTouchDistance = 0;
+        
+        previewWrapper.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 2) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                lastTouchDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+            }
+        }, { passive: true });
+        
+        previewWrapper.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const currentDistance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                
+                if (lastTouchDistance > 0) {
+                    const scale = currentDistance / lastTouchDistance;
+                    const newZoom = Math.min(Math.max(currentZoom * scale, minZoom), maxZoom);
+                    currentZoom = newZoom;
+                    updateZoomLevel();
+                }
+                lastTouchDistance = currentDistance;
+            }
+        }, { passive: false });
+        
+        previewWrapper.addEventListener('touchend', function(e) {
+            lastTouchDistance = 0;
+        }, { passive: true });
+    });
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closePreview();
+        }
+        if (document.getElementById('previewModal').classList.contains('active')) {
+            if (e.key === '+' || e.key === '=') {
+                e.preventDefault();
+                zoomIn();
+            }
+            if (e.key === '-') {
+                e.preventDefault();
+                zoomOut();
+            }
+            if (e.key === '0') {
+                e.preventDefault();
+                resetZoom();
+            }
+        }
+    });
+    
+    // ======================== SCROLL =================
     function ultraSmoothScrollToBottom() {
         if (!chatContainer) return;
         if (scrollFrame) cancelAnimationFrame(scrollFrame);
         scrollFrame = requestAnimationFrame(() => {
-            chatContainer.scrollTo({
-                top: chatContainer.scrollHeight,
-                behavior: 'smooth'
-            });
+            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
             scrollFrame = null;
         });
     }
     
     function continuousScrollSync() {
-        if (!isScrollingScheduled) {
-            isScrollingScheduled = true;
-            requestAnimationFrame(() => {
-                ultraSmoothScrollToBottom();
-                isScrollingScheduled = false;
-            });
-        }
+        requestAnimationFrame(() => ultraSmoothScrollToBottom());
     }
     
     // ======================== UTILITIES =========================
-    const langIcons = {
-        python: 'fa-brands fa-python', javascript: 'fa-brands fa-js', html: 'fa-brands fa-html5',
-        css: 'fa-brands fa-css3-alt', java: 'fa-brands fa-java', cpp: 'fa-solid fa-code',
-        default: 'fa-solid fa-code'
+    const langIcons = { 
+        python: 'fa-brands fa-python', 
+        javascript: 'fa-brands fa-js', 
+        html: 'fa-brands fa-html5', 
+        css: 'fa-brands fa-css3-alt', 
+        java: 'fa-brands fa-java', 
+        cpp: 'fa-solid fa-code', 
+        c: 'fa-solid fa-code',
+        rust: 'fa-solid fa-code',
+        go: 'fa-solid fa-code',
+        ruby: 'fa-solid fa-code',
+        php: 'fa-brands fa-php',
+        swift: 'fa-solid fa-code',
+        typescript: 'fa-solid fa-code',
+        shell: 'fa-solid fa-terminal',
+        bash: 'fa-solid fa-terminal',
+        json: 'fa-solid fa-brackets-curly',
+        xml: 'fa-solid fa-code',
+        yaml: 'fa-solid fa-code',
+        markdown: 'fa-solid fa-markdown',
+        sql: 'fa-solid fa-database',
+        default: 'fa-solid fa-code' 
     };
     function getLangIcon(lang) { return langIcons[lang.toLowerCase()] || langIcons.default; }
     
@@ -472,25 +1541,87 @@
     
     function highlightCode(code, lang) { 
         let escaped = escapeHtml(code);
-        if (lang === 'javascript' || lang === 'js') {
-            const keywords = ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'break', 'continue', 'switch', 'case', 'default', 'try', 'catch', 'finally', 'throw', 'new', 'class', 'extends', 'super', 'this', 'typeof', 'instanceof', 'null', 'undefined', 'true', 'false', 'async', 'await', 'export', 'import', 'from', 'as'];
+        const langLower = lang.toLowerCase();
+        
+        if (langLower === 'javascript' || langLower === 'js' || langLower === 'typescript' || langLower === 'ts') {
+            const keywords = ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'break', 'continue', 'switch', 'case', 'default', 'try', 'catch', 'finally', 'throw', 'new', 'class', 'extends', 'super', 'this', 'typeof', 'instanceof', 'null', 'undefined', 'true', 'false', 'async', 'await', 'export', 'import', 'from', 'as', 'delete', 'void', 'yield', 'get', 'set', 'of', 'in'];
             keywords.forEach(kw => { escaped = escaped.replace(new RegExp(`\\b(${kw})\\b`, 'g'), `<span class="syn-keyword">$1</span>`); });
-            escaped = escaped.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g, `<span class="syn-function">$1</span>(`);
+            escaped = escaped.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, `<span class="syn-function">$1</span>(`);
             escaped = escaped.replace(/(["'`])(.*?)\1/g, `<span class="syn-string">$1$2$1</span>`);
             escaped = escaped.replace(/\b(\d+)\b/g, `<span class="syn-number">$1</span>`);
             escaped = escaped.replace(/(\/\/.*$)/gm, `<span class="syn-comment">$1</span>`);
-        } else if(lang === 'python') {
-            const keywords = ['def', 'return', 'if', 'elif', 'else', 'for', 'while', 'break', 'continue', 'import', 'from', 'as', 'class', 'self', 'None', 'True', 'False', 'and', 'or', 'not', 'in', 'is', 'lambda', 'with', 'try', 'except', 'finally', 'raise'];
+            escaped = escaped.replace(/\/\*[\s\S]*?\*\//g, `<span class="syn-comment">$&</span>`);
+            escaped = escaped.replace(/\b(console|document|window|Math|JSON|Array|Object|String|Number|Boolean|Promise|fetch|setTimeout|setInterval|clearTimeout|clearInterval|Date|RegExp|Error)\b/g, `<span class="syn-builtin">$1</span>`);
+        }
+        else if(langLower === 'python' || langLower === 'py') {
+            const keywords = ['def', 'return', 'if', 'elif', 'else', 'for', 'while', 'break', 'continue', 'import', 'from', 'as', 'class', 'self', 'None', 'True', 'False', 'and', 'or', 'not', 'in', 'is', 'lambda', 'with', 'try', 'except', 'finally', 'raise', 'assert', 'del', 'global', 'nonlocal', 'pass', 'yield', 'async', 'await'];
             keywords.forEach(kw => { escaped = escaped.replace(new RegExp(`\\b(${kw})\\b`, 'g'), `<span class="syn-keyword">$1</span>`); });
             escaped = escaped.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g, `<span class="syn-function">$1</span>(`);
             escaped = escaped.replace(/(["'])(.*?)\1/g, `<span class="syn-string">$1$2$1</span>`);
             escaped = escaped.replace(/\b(\d+)\b/g, `<span class="syn-number">$1</span>`);
             escaped = escaped.replace(/(#.*$)/gm, `<span class="syn-comment">$1</span>`);
-        } else {
-            escaped = escaped.replace(/(\/\/.*$)/gm, `<span class="syn-comment">$1</span>`);
+            escaped = escaped.replace(/'''[\s\S]*?'''/g, `<span class="syn-string">$&</span>`);
+            escaped = escaped.replace(/"""[\s\S]*?"""/g, `<span class="syn-string">$&</span>`);
+            escaped = escaped.replace(/\b(print|len|range|str|int|float|list|dict|tuple|set|bool|type|isinstance|issubclass|super|open|file|input|raw_input|exec|eval)\b/g, `<span class="syn-builtin">$1</span>`);
+        }
+        else if(langLower === 'html' || langLower === 'htm') {
+            escaped = escaped.replace(/(&lt;\/?)(\w+)/g, `<span class="syn-keyword">$1$2</span>`);
+            escaped = escaped.replace(/(\w+)=/g, `<span class="syn-function">$1</span>=`);
+            escaped = escaped.replace(/(".*?")/g, `<span class="syn-string">$1</span>`);
+            escaped = escaped.replace(/(&lt;!--.*?--&gt;)/g, `<span class="syn-comment">$1</span>`);
+        }
+        else if(langLower === 'css') {
+            escaped = escaped.replace(/([a-zA-Z-]+)\s*:/g, `<span class="syn-function">$1</span>:`);
+            escaped = escaped.replace(/(".*?")/g, `<span class="syn-string">$1</span>`);
+            escaped = escaped.replace(/(\d+px|\d+%|\d+em|\d+rem|\d+v[wh]|\d+)/g, `<span class="syn-number">$1</span>`);
+            escaped = escaped.replace(/(\/\*.*?\*\/)/g, `<span class="syn-comment">$1</span>`);
+            escaped = escaped.replace(/(#[a-fA-F0-9]{3,6})/g, `<span class="syn-number">$1</span>`);
+        }
+        else if(langLower === 'java') {
+            const keywords = ['public', 'private', 'protected', 'static', 'final', 'void', 'class', 'interface', 'extends', 'implements', 'return', 'if', 'else', 'for', 'while', 'do', 'break', 'continue', 'switch', 'case', 'default', 'try', 'catch', 'finally', 'throw', 'throws', 'new', 'super', 'this', 'null', 'true', 'false', 'int', 'long', 'float', 'double', 'boolean', 'char', 'byte', 'short', 'abstract', 'synchronized', 'volatile', 'transient', 'native', 'strictfp', 'enum', 'assert'];
+            keywords.forEach(kw => { escaped = escaped.replace(new RegExp(`\\b(${kw})\\b`, 'g'), `<span class="syn-keyword">$1</span>`); });
+            escaped = escaped.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g, `<span class="syn-function">$1</span>(`);
             escaped = escaped.replace(/(["'])(.*?)\1/g, `<span class="syn-string">$1$2$1</span>`);
             escaped = escaped.replace(/\b(\d+)\b/g, `<span class="syn-number">$1</span>`);
+            escaped = escaped.replace(/(\/\/.*$)/gm, `<span class="syn-comment">$1</span>`);
+            escaped = escaped.replace(/\/\*[\s\S]*?\*\//g, `<span class="syn-comment">$&</span>`);
+            escaped = escaped.replace(/\b(System|String|Integer|Double|Float|Long|Boolean|Character|Byte|Short|Object|Class|Exception|RuntimeException|NullPointerException|ArrayIndexOutOfBounds|Math)\b/g, `<span class="syn-builtin">$1</span>`);
         }
+        else if(langLower === 'cpp' || langLower === 'c++' || langLower === 'c') {
+            const keywords = ['int', 'float', 'double', 'char', 'void', 'bool', 'long', 'short', 'unsigned', 'signed', 'const', 'static', 'extern', 'inline', 'virtual', 'class', 'struct', 'union', 'enum', 'public', 'private', 'protected', 'friend', 'operator', 'template', 'typename', 'namespace', 'using', 'new', 'delete', 'return', 'if', 'else', 'for', 'while', 'do', 'break', 'continue', 'switch', 'case', 'default', 'try', 'catch', 'throw', 'true', 'false', 'nullptr', 'this'];
+            keywords.forEach(kw => { escaped = escaped.replace(new RegExp(`\\b(${kw})\\b`, 'g'), `<span class="syn-keyword">$1</span>`); });
+            escaped = escaped.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g, `<span class="syn-function">$1</span>(`);
+            escaped = escaped.replace(/(["'])(.*?)\1/g, `<span class="syn-string">$1$2$1</span>`);
+            escaped = escaped.replace(/\b(\d+)\b/g, `<span class="syn-number">$1</span>`);
+            escaped = escaped.replace(/(\/\/.*$)/gm, `<span class="syn-comment">$1</span>`);
+            escaped = escaped.replace(/\/\*[\s\S]*?\*\//g, `<span class="syn-comment">$&</span>`);
+            escaped = escaped.replace(/\b(std|cout|cin|endl|string|vector|map|set|unordered_map|unique_ptr|shared_ptr|make_shared|make_unique)\b/g, `<span class="syn-builtin">$1</span>`);
+        }
+        else if(langLower === 'shell' || langLower === 'bash' || langLower === 'sh') {
+            const keywords = ['if', 'then', 'else', 'elif', 'fi', 'for', 'while', 'do', 'done', 'case', 'esac', 'function', 'return', 'break', 'continue', 'export', 'source', 'alias', 'echo', 'read', 'cd', 'ls', 'pwd', 'mkdir', 'rm', 'cp', 'mv', 'chmod', 'grep', 'awk', 'sed', 'find', 'xargs'];
+            keywords.forEach(kw => { escaped = escaped.replace(new RegExp(`\\b(${kw})\\b`, 'g'), `<span class="syn-keyword">$1</span>`); });
+            escaped = escaped.replace(/(#.*$)/gm, `<span class="syn-comment">$1</span>`);
+            escaped = escaped.replace(/(["'])(.*?)\1/g, `<span class="syn-string">$1$2$1</span>`);
+            escaped = escaped.replace(/\b(\d+)\b/g, `<span class="syn-number">$1</span>`);
+            escaped = escaped.replace(/\$([a-zA-Z_][a-zA-Z0-9_]*)/g, `<span class="syn-variable">$$1</span>`);
+        }
+        else if(langLower === 'sql') {
+            const keywords = ['SELECT', 'FROM', 'WHERE', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER', 'DROP', 'TABLE', 'INDEX', 'VIEW', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'ON', 'AND', 'OR', 'NOT', 'IN', 'BETWEEN', 'LIKE', 'IS', 'NULL', 'ORDER', 'BY', 'GROUP', 'HAVING', 'UNION', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'AS', 'INTO', 'VALUES', 'SET', 'PRIMARY', 'KEY', 'FOREIGN', 'REFERENCES', 'CONSTRAINT', 'UNIQUE', 'CHECK', 'DEFAULT', 'CASCADE'];
+            keywords.forEach(kw => { escaped = escaped.replace(new RegExp(`\\b(${kw})\\b`, 'gi'), `<span class="syn-keyword">$1</span>`); });
+            escaped = escaped.replace(/(["'])(.*?)\1/g, `<span class="syn-string">$1$2$1</span>`);
+            escaped = escaped.replace(/\b(\d+)\b/g, `<span class="syn-number">$1</span>`);
+            escaped = escaped.replace(/(--.*$)/gm, `<span class="syn-comment">$1</span>`);
+        }
+        else {
+            const commonKeywords = ['function', 'return', 'if', 'else', 'for', 'while', 'break', 'continue', 'switch', 'case', 'default', 'try', 'catch', 'finally', 'throw', 'new', 'class', 'extends', 'super', 'this', 'null', 'true', 'false', 'const', 'let', 'var', 'import', 'export', 'from', 'as', 'def', 'class', 'public', 'private', 'protected', 'static', 'void', 'int', 'float', 'double', 'char', 'string', 'bool', 'boolean'];
+            commonKeywords.forEach(kw => { escaped = escaped.replace(new RegExp(`\\b(${kw})\\b`, 'g'), `<span class="syn-keyword">$1</span>`); });
+            escaped = escaped.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g, `<span class="syn-function">$1</span>(`);
+            escaped = escaped.replace(/(["'])(.*?)\1/g, `<span class="syn-string">$1$2$1</span>`);
+            escaped = escaped.replace(/\b(\d+)\b/g, `<span class="syn-number">$1</span>`);
+            escaped = escaped.replace(/(\/\/.*$|#.*$|--.*$)/gm, `<span class="syn-comment">$1</span>`);
+            escaped = escaped.replace(/\/\*[\s\S]*?\*\//g, `<span class="syn-comment">$&</span>`);
+        }
+        
         return escaped;
     }
     
@@ -525,19 +1656,46 @@
         });
     }
     
-    function scrollBottom() { ultraSmoothScrollToBottom(); }
     function removeGreeting() { document.getElementById('greeting-wrapper')?.remove(); }
     
-    function appendMessage(content, isUser = false, fileMeta = null) {
+    function appendMessage(content, isUser = false, fileMeta = null, isImage = false, imageData = null, referenceImage = null) {
         removeGreeting();
         const row = document.createElement('div');
         row.className = `flex w-full gap-2 ${isUser ? 'justify-end' : 'justify-start'}`;
         const bubble = document.createElement('div');
         bubble.className = `bubble-content rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow-sm border ${isUser ? (isDark ? 'bg-rose-950/30 text-rose-100 border-rose-900/50 rounded-tr-sm' : 'bg-rose-50 text-gray-800 border-rose-100 rounded-tr-sm') : (isDark ? 'bg-[#1c1c1e] text-gray-200 border-zinc-800 rounded-tl-sm' : 'bg-white text-gray-800 border-gray-200 rounded-tl-sm')}`;
+        
+        if(isUser && referenceImage) {
+            bubble.innerHTML += `
+                <div style="margin-top:4px;">
+                    <img src="${referenceImage}" class="reference-image-in-chat" alt="Reference image">
+                    <span class="reference-label">📎 Reference image</span>
+                </div>
+            `;
+        }
+        
         if(isUser && fileMeta?.dataURL) {
             if(fileMeta.type?.startsWith('image/')) bubble.innerHTML += `<div class="max-w-[220px] rounded-xl overflow-hidden mt-1"><img src="${fileMeta.dataURL}" class="w-full h-auto max-h-48 object-cover"></div>`;
             else bubble.innerHTML += `<div class="flex gap-2 p-2 bg-black/5 rounded-xl mt-1"><i class="fa-regular fa-file-lines text-rose-500"></i><span class="text-xs truncate">${escapeHtml(fileMeta.name)}</span></div>`;
         }
+        
+        if(isImage && imageData) {
+            const isValidImage = imageData && typeof imageData === 'string' && (imageData.startsWith('http') || imageData.startsWith('data:image'));
+            const imgHtml = isValidImage ? 
+                `<div class="generated-image-container" onclick="openPreview('${imageData}')">
+                    <img src="${imageData}" alt="Generated image" onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;color:#6b7280;\\'><i class=\\'fa-regular fa-image\\' style=\\'font-size:24px;display:block;margin-bottom:8px;\\'></i>Image Error</div>'">
+                </div>` :
+                `<div style="padding:20px;text-align:center;color:#6b7280;"><i class="fa-regular fa-image" style="font-size:24px;display:block;margin-bottom:8px;"></i>No image data received</div>`;
+            bubble.innerHTML += imgHtml;
+            
+            if(isValidImage) {
+                bubble.innerHTML += `
+                <div class="image-actions">
+                    <button onclick="downloadImage('${imageData}')"><i class="fa-solid fa-download"></i> Download</button>
+                </div>`;
+            }
+        }
+        
         if(content) {
             const textDiv = document.createElement('div');
             textDiv.innerHTML = isUser ? escapeHtml(content).replace(/\n/g,'<br>') : formatCodeBlocks(content);
@@ -555,13 +1713,200 @@
         const div = document.createElement('div');
         div.id = 'ai-typing';
         div.className = 'flex justify-start items-center gap-2 text-gray-500 text-sm italic px-2 py-1';
-        div.innerHTML = `<span>⚡ HeaNg[Black-Cyber] thinking</span><div class="thinking-dots flex gap-1"><span></span><span></span><span></span></div>`;
+        div.innerHTML = `<span>🚀 HeaNg[Black-Cyber] thinking</span><div class="thinking-dots flex gap-1"><span></span><span></span><span></span></div>`;
         chatContainer.appendChild(div);
         ultraSmoothScrollToBottom();
     }
     function removeTypingIndicator() { document.getElementById('ai-typing')?.remove(); }
     
+    // ======================== CONTROL BUTTONS =========================
+    function showControlButtons() {
+        sendBtn.style.display = 'none';
+        pauseContinueBtn.style.display = 'flex';
+        stopBtn.style.display = 'flex';
+        pauseContinueBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        pauseContinueBtn.className = 'control-btn pause-btn';
+        isPaused = false;
+        isStopped = false;
+    }
+    
+    function hideControlButtons() {
+        sendBtn.style.display = 'flex';
+        pauseContinueBtn.style.display = 'none';
+        stopBtn.style.display = 'none';
+        isPaused = false;
+        isStopped = false;
+        isGenerationActive = false;
+    }
+    
+    function togglePauseResume() {
+        if (!isGenerationActive) return;
+        isPaused = !isPaused;
+        if (isPaused) {
+            pauseContinueBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            pauseContinueBtn.className = 'control-btn continue-btn';
+            pauseContinueBtn.title = 'Resume Generation';
+            showToast('⏸️ Generation paused', false);
+        } else {
+            pauseContinueBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            pauseContinueBtn.className = 'control-btn pause-btn';
+            pauseContinueBtn.title = 'Pause Generation';
+            showToast('▶️ Generation resumed', false);
+            // Resume reading if there's a reader
+            if (currentReader && !isStopped) {
+                // Signal to continue reading
+                continueReading();
+            }
+        }
+    }
+    
+    function continueReading() {
+        // This is called when resuming - the reading loop will check isPaused
+        // and continue if not paused
+        if (currentReader && !isStopped && !isPaused) {
+            // The main reading loop will continue automatically
+            // We just need to make sure the loop checks isPaused flag
+        }
+    }
+    
+    function stopGeneration() {
+        if (!isGenerationActive) return;
+        isStopped = true;
+        isPaused = false;
+        isGenerationActive = false;
+        
+        // Cancel the controller if exists
+        if (currentController) {
+            try {
+                currentController.abort();
+            } catch(e) {}
+            currentController = null;
+        }
+        
+        // Close reader if exists
+        if (currentReader) {
+            try {
+                currentReader.cancel();
+            } catch(e) {}
+            currentReader = null;
+        }
+        
+        // Update UI
+        hideControlButtons();
+        
+        // Remove streaming cursor and add stopped state
+        if (targetBubbleRef) {
+            // Remove cursor if present
+            targetBubbleRef.innerHTML = targetBubbleRef.innerHTML.replace(/<span class="streaming-cursor"><\/span>/, '');
+            // Add a "Stopped" indicator
+            if (!targetBubbleRef.innerHTML.includes('⏹️ Stopped')) {
+                targetBubbleRef.innerHTML += `<div style="color:#6b7280;font-size:12px;margin-top:6px;">⏹️ Generation stopped by user</div>`;
+            }
+        }
+        
+        // Save partial content to history if any
+        if (fullContent && fullContent.length > 0) {
+            conversationHistory.push({ role: 'assistant', content: fullContent });
+            const updatedSession = allSessions.find(s => s.id === currentSessionId);
+            if(updatedSession) updatedSession.history = [...conversationHistory];
+            saveSessionsToStorage(allSessions);
+            renderRecentList();
+        }
+        
+        showToast('⏹️ Generation stopped', false);
+        ultraSmoothScrollToBottom();
+        targetBubbleRef = null;
+    }
+    
+    // ======================== ADD WATERMARK TO IMAGE =========================
+    function addWatermarkToImage(imageDataUrl) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const watermarkText = 'HeaNg[Black-Cyber] • AI';
+                    const fontSize = Math.max(18, Math.min(36, img.width * 0.035));
+                    ctx.font = `600 ${fontSize}px 'Inter', 'Segoe UI', system-ui, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    
+                    const padding = Math.max(16, fontSize * 0.6);
+                    const x = canvas.width / 2;
+                    const y = canvas.height - padding;
+                    
+                    const metrics = ctx.measureText(watermarkText);
+                    const textWidth = metrics.width;
+                    const bgPadding = fontSize * 0.5;
+                    const bgWidth = textWidth + bgPadding * 2;
+                    const bgHeight = fontSize * 1.4;
+                    const bgX = x - bgWidth / 2;
+                    const bgY = y - bgHeight + fontSize * 0.2;
+                    
+                    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 2;
+                    
+                    ctx.beginPath();
+                    if (ctx.roundRect) {
+                        ctx.roundRect(bgX, bgY, bgWidth, bgHeight, bgHeight / 2);
+                    } else {
+                        ctx.rect(bgX, bgY, bgWidth, bgHeight);
+                    }
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+                    ctx.fill();
+                    
+                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 2;
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillText(watermarkText, x, y);
+                    
+                    ctx.shadowBlur = 0;
+                    const dotX = x - textWidth/2 - bgPadding + fontSize * 0.4;
+                    const dotY = y - fontSize * 0.35;
+                    ctx.beginPath();
+                    ctx.arc(dotX, dotY, fontSize * 0.12, 0, Math.PI * 2);
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fill();
+                    
+                    resolve(canvas.toDataURL('image/png'));
+                } catch(err) {
+                    reject(err);
+                }
+            };
+            img.onerror = function() {
+                resolve(imageDataUrl);
+            };
+            img.src = imageDataUrl;
+        });
+    }
+    
+    // ======================== STREAM AI WITH PAUSE/STOP =========================
     async function streamAI(userMsg, targetBubble, fileMetaHistory) {
+        if(!API_KEY || API_KEY.trim() === '') { 
+            targetBubble.innerHTML = `<span class="text-red-500">⚠️ No API Key! Please click "Enter Your (API Key)" and save your api key.</span>`;
+            showToast("Missing API Key", true);
+            return;
+        }
+        
+        targetBubbleRef = targetBubble;
+        fullContent = '';
+        isGenerationActive = true;
+        isStopped = false;
+        isPaused = false;
+        showControlButtons();
+        
         if(!conversationHistory.length || conversationHistory[0]?.role !== 'system') conversationHistory.unshift({ role: 'system', content: systemPromptCache });
         conversationHistory.push({ role: 'user', content: userMsg });
         let session = allSessions.find(s => s.id === currentSessionId);
@@ -570,26 +1915,49 @@
             session = { id: currentSessionId, title, history: [...conversationHistory] };
             allSessions.unshift(session);
         } else { session.history = [...conversationHistory]; }
-        localStorage.setItem('heang_sessions', JSON.stringify(allSessions));
+        saveSessionsToStorage(allSessions);
         renderRecentList();
         
         try {
+            currentController = new AbortController();
             const resp = await fetch(OPENROUTER_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model: MODEL_NAME, messages: conversationHistory.map(m => ({ role: m.role, content: m.content })), temperature: 0.75, stream: true })
+                body: JSON.stringify({ model: MODEL_NAME, messages: conversationHistory.map(m => ({ role: m.role, content: m.content })), temperature: 0.75, stream: true }),
+                signal: currentController.signal
             });
             if(!resp.ok) throw new Error(`API ${resp.status}`);
+            
             const reader = resp.body.getReader();
+            currentReader = reader;
             const decoder = new TextDecoder();
-            let full = '';
             let lastChunkTime = 0;
+            
             while(true) {
+                // Check if stopped
+                if (isStopped) {
+                    break;
+                }
+                
+                // Check if paused - wait until resumed
+                while (isPaused && !isStopped) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                if (isStopped) break;
+                
                 const { done, value } = await reader.read();
                 if(done) break;
+                
                 const chunk = decoder.decode(value);
                 const lines = chunk.split('\n');
                 for(const line of lines) {
+                    if (isStopped) break;
+                    while (isPaused && !isStopped) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                    if (isStopped) break;
+                    
                     if(line.startsWith('data: ')) {
                         const data = line.slice(6).trim();
                         if(data === '[DONE]') continue;
@@ -597,71 +1965,358 @@
                             const json = JSON.parse(data);
                             const delta = json.choices[0]?.delta?.content || '';
                             if(delta) {
-                                full += delta;
-                                targetBubble.innerHTML = formatCodeBlocks(full) + '<span class="streaming-cursor"></span>';
-                                continuousScrollSync();
-                                if (Date.now() - lastChunkTime > 12) {
-                                    ultraSmoothScrollToBottom();
-                                    lastChunkTime = Date.now();
+                                fullContent += delta;
+                                if (!isStopped && !isPaused) {
+                                    targetBubble.innerHTML = formatCodeBlocks(fullContent) + '<span class="streaming-cursor"></span>';
+                                    continuousScrollSync();
+                                    if (Date.now() - lastChunkTime > 12) { ultraSmoothScrollToBottom(); lastChunkTime = Date.now(); }
                                 }
                             }
                         } catch(e) {}
                     }
                 }
             }
-            targetBubble.innerHTML = formatCodeBlocks(full);
-            conversationHistory.push({ role: 'assistant', content: full });
-            const updatedSession = allSessions.find(s => s.id === currentSessionId);
-            if(updatedSession) updatedSession.history = [...conversationHistory];
-            localStorage.setItem('heang_sessions', JSON.stringify(allSessions));
+            
+            // Final update
+            if (!isStopped) {
+                targetBubble.innerHTML = formatCodeBlocks(fullContent);
+                conversationHistory.push({ role: 'assistant', content: fullContent });
+                const updatedSession = allSessions.find(s => s.id === currentSessionId);
+                if(updatedSession) updatedSession.history = [...conversationHistory];
+                saveSessionsToStorage(allSessions);
+                attachCopyEvents();
+                ultraSmoothScrollToBottom();
+            }
+            
+        } catch(err) {
+            if (err.name === 'AbortError' || err.code === 20) {
+                // Aborted by user - handled in stop logic
+                console.log('Stream aborted by user');
+            } else {
+                targetBubble.innerHTML = `<span class="text-red-400">⚠️ Engine overload: ${err.message}</span>`;
+                showToast("API error", true);
+                ultraSmoothScrollToBottom();
+            }
+        } finally {
+            currentReader = null;
+            currentController = null;
+            if (!isStopped) {
+                // Only hide controls if not stopped
+                hideControlButtons();
+                isGenerationActive = false;
+            }
+        }
+    }
+    
+    // ======================== IMAGE UPLOAD HANDLING =========================
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageDataUrl = e.target.result;
+            uploadedImageData = imageDataUrl;
+            uploadedImageName = file.name;
+            
+            uploadedImagePreview.src = imageDataUrl;
+            uploadedImageNameEl.textContent = file.name;
+            imageUploadPreview.classList.remove('hidden');
+            
+            showToast("📸 Image uploaded as reference! Add prompt and click Generate.", false);
+            chatInput.focus();
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    function clearUploadedImage() {
+        uploadedImageData = null;
+        uploadedImageName = '';
+        imageUploadPreview.classList.add('hidden');
+        uploadedImagePreview.src = '';
+        document.getElementById('image-upload-input').value = '';
+        showToast("Image cleared", false);
+    }
+    
+    // ======================== EXTRACT BASE64 FROM API RESPONSE =========================
+    function extractBase64Image(content) {
+        if (!content) return null;
+        
+        if (typeof content === 'string' && content.startsWith('data:image')) {
+            return content;
+        }
+        
+        if (typeof content === 'string') {
+            const match = content.match(/data:image\/[^;]+;base64,[^\s"]+/i);
+            if (match) {
+                let base64Data = match[0];
+                base64Data = base64Data.replace(/,{2,}/, ',');
+                return base64Data;
+            }
+        }
+        
+        if (typeof content === 'object' && content !== null) {
+            if (content.url && typeof content.url === 'string') {
+                let url = content.url;
+                if (url.startsWith('data:image')) {
+                    url = url.replace(/,{2,}/, ',');
+                    return url;
+                }
+            }
+            if (content.image_url && typeof content.image_url === 'string') {
+                let url = content.image_url;
+                if (url.startsWith('data:image')) {
+                    url = url.replace(/,{2,}/, ',');
+                    return url;
+                }
+            }
+            if (content.image && typeof content.image === 'string') {
+                let url = content.image;
+                if (url.startsWith('data:image')) {
+                    url = url.replace(/,{2,}/, ',');
+                    return url;
+                }
+            }
+            const jsonStr = JSON.stringify(content);
+            const match = jsonStr.match(/data:image\/[^;]+;base64,[^\s"]+/i);
+            if (match) {
+                let base64Data = match[0];
+                base64Data = base64Data.replace(/,{2,}/, ',');
+                return base64Data;
+            }
+        }
+        
+        return null;
+    }
+    
+    // ======================== IMAGE GENERATION WITH WATERMARK =========================
+    async function generateImage() {
+        const prompt = chatInput.value.trim();
+        if(!prompt) {
+            showToast("Please enter an prompt first", true);
+            return;
+        }
+        if(!API_KEY || API_KEY.trim() === '') {
+            showToast("⚠️ No API Key! Please set your API key in Settings.", true);
+            return;
+        }
+        
+        let hasReference = uploadedImageData !== null;
+        let referenceImageCopy = uploadedImageData;
+        
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+        updateSendButtonState();
+        
+        let displayMsg = hasReference ? "🖼️ Edit image: " + prompt : "🖼️ Generate image: " + prompt;
+        appendMessage(displayMsg, true, null, false, null, referenceImageCopy);
+        
+        if (hasReference) {
+            clearUploadedImage();
+        }
+        
+        showTypingIndicator();
+        const aiBubble = appendMessage('', false);
+        removeTypingIndicator();
+        
+        aiBubble.innerHTML = `
+            <div class="image-loading">
+                <div class="spinner"></div>
+                <span style="color: #dc2626; font-weight: 500;">${hasReference ? '🎨 Generating with reference image...' : '🎨 Generating Image...'}</span>
+            </div>
+        `;
+        ultraSmoothScrollToBottom();
+        
+        try {
+            let finalPrompt = prompt;
+            if (hasReference && referenceImageCopy) {
+                finalPrompt = prompt + " (Reference image included for context)";
+            }
+            
+            const response = await fetch(OPENROUTER_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${API_KEY}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': window.location.href,
+                    'X-Title': 'HeaNg[Black-Cyber] Image Generator'
+                },
+                body: JSON.stringify({
+                    model: 'x-ai/grok-imagine-image-quality',
+                    messages: [
+                        { role: 'user', content: finalPrompt }
+                    ]
+                })
+            });
+            
+            if(!response.ok) {
+                let errMsg = `API Error: ${response.status}`;
+                try {
+                    const errData = await response.json();
+                    if(errData.error?.message) errMsg = errData.error.message;
+                } catch(e) {}
+                throw new Error(errMsg);
+            }
+            
+            const data = await response.json();
+            console.log('API Response:', JSON.stringify(data, null, 2));
+            
+            let imageUrl = null;
+            let textResponse = null;
+            
+            if (data && data.choices && data.choices.length > 0) {
+                const choice = data.choices[0];
+                if (choice.message) {
+                    let content = choice.message.content;
+                    
+                    if (content) {
+                        const base64Image = extractBase64Image(content);
+                        if (base64Image) {
+                            imageUrl = base64Image;
+                        } else if (typeof content === 'string') {
+                            const patterns = [
+                                /!\[.*?\]\((.*?)\)/,
+                                /(https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|webp|svg))/i,
+                                /(https?:\/\/[^\s]+)/i,
+                                /data:image\/[^;]+;base64,[^\s"]+/i
+                            ];
+                            
+                            let found = false;
+                            for (const pattern of patterns) {
+                                const match = content.match(pattern);
+                                if (match) {
+                                    let url = match[1] || match[0];
+                                    if (url.startsWith('data:image')) {
+                                        url = url.replace(/,{2,}/, ',');
+                                    }
+                                    imageUrl = url;
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!found) {
+                                textResponse = content;
+                            }
+                        } else if (typeof content === 'object') {
+                            const base64FromObj = extractBase64Image(content);
+                            if (base64FromObj) {
+                                imageUrl = base64FromObj;
+                            } else {
+                                textResponse = JSON.stringify(content, null, 2);
+                            }
+                        }
+                    }
+                    
+                    if (!imageUrl && choice.message.images && Array.isArray(choice.message.images) && choice.message.images.length > 0) {
+                        const img = choice.message.images[0];
+                        const base64FromImg = extractBase64Image(img);
+                        if (base64FromImg) {
+                            imageUrl = base64FromImg;
+                        }
+                    }
+                }
+            }
+            
+            if (imageUrl && typeof imageUrl === 'string') {
+                imageUrl = imageUrl.replace(/,{2,}/, ',');
+                
+                const isValid = imageUrl.startsWith('http') || imageUrl.startsWith('data:image');
+                if (!isValid) {
+                    if (imageUrl.match(/^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/)) {
+                        imageUrl = 'https://' + imageUrl;
+                    } else {
+                        throw new Error('Invalid image URL format');
+                    }
+                }
+                
+                let watermarkedImage = null;
+                try {
+                    watermarkedImage = await addWatermarkToImage(imageUrl);
+                } catch(watermarkErr) {
+                    console.warn('Watermark failed, using original:', watermarkErr);
+                    watermarkedImage = imageUrl;
+                }
+                
+                const finalImage = watermarkedImage || imageUrl;
+                
+                await saveImageToGallery(finalImage);
+                
+                aiBubble.innerHTML = `
+                    <div class="generated-image-container" onclick="openPreview('${finalImage}')">
+                        <img src="${finalImage}" alt="Generated image" onerror="this.parentElement.innerHTML='<div style=\\'padding:20px;text-align:center;color:#6b7280;\\'><i class=\\'fa-regular fa-image\\' style=\\'font-size:24px;display:block;margin-bottom:8px;\\'></i>Image Error</div>'">
+                    </div>
+                    <div class="image-actions">
+                        <button onclick="downloadImage('${finalImage}')"><i class="fa-solid fa-download"></i> Download</button>
+                    </div>
+                `;
+                showToast("✅ Image generated with watermark!", false);
+                
+                const imageEntry = { role: 'assistant', content: `[Generated Image] ${prompt}`, imageUrl: finalImage };
+                conversationHistory.push(imageEntry);
+                
+                const updatedSession = allSessions.find(s => s.id === currentSessionId);
+                if(updatedSession) updatedSession.history = [...conversationHistory];
+                saveSessionsToStorage(allSessions);
+                renderRecentList();
+                await updateImageCountBadge();
+            } else if (textResponse) {
+                aiBubble.innerHTML = formatCodeBlocks(textResponse);
+                conversationHistory.push({ role: 'assistant', content: textResponse });
+                const updatedSession = allSessions.find(s => s.id === currentSessionId);
+                if(updatedSession) updatedSession.history = [...conversationHistory];
+                saveSessionsToStorage(allSessions);
+                renderRecentList();
+                showToast("⚠️ API returned text instead of image", false);
+            } else {
+                aiBubble.innerHTML = `
+                    <div style="color:#6b7280;font-size:12px;">
+                        <p>⚠️ No image response received from API.</p>
+                    </div>
+                `;
+                showToast("No image response from API", true);
+            }
+            
             attachCopyEvents();
             ultraSmoothScrollToBottom();
+            
         } catch(err) {
-            targetBubble.innerHTML = `<span class="text-red-400">⚠️ Engine overload: ${err.message}</span>`;
-            showToast("API error", true);
+            aiBubble.innerHTML = `<span class="text-red-400">⚠️ Image generation failed: ${escapeHtml(err.message)}</span>`;
+            showToast("Image generation failed: " + err.message, true);
             ultraSmoothScrollToBottom();
         }
     }
     
-    function handleTagClickAndScroll(tag) {
-        chatInput.value += tag + ' ';
-        chatInput.focus();
-        updateSendButtonState();
-        setTimeout(() => {
-            chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            ultraSmoothScrollToBottom();
-        }, 50);
+    // ======================== IMAGE HELPERS =========================
+    function downloadImage(url) {
+        if (!url || typeof url !== 'string') {
+            showToast("Invalid image URL", true);
+            return;
+        }
+        fetch(url)
+            .then(res => res.blob())
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `generated_image_${Date.now()}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            })
+            .catch(() => {
+                window.open(url, '_blank');
+            });
     }
+    
     function handleButtonClick(name) { showToast(`✨ ${name} coming soon`, false); }
     
-    function handleFileSelect(e) {
-        const f = e.target.files[0];
-        if(!f) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-            activeFile = { name: f.name, type: f.type, dataURL: ev.target.result };
-            previewNameSpan.textContent = f.name;
-            if(f.type.startsWith('image/')) { previewImg.src = ev.target.result; previewImg.classList.remove('hidden'); previewFileIcon.classList.add('hidden'); }
-            else { previewImg.classList.add('hidden'); previewFileIcon.classList.remove('hidden'); }
-            previewBox.classList.remove('hidden');
-            updateSendButtonState();
-        };
-        reader.readAsDataURL(f);
-    }
-    function clearUploadedFile() {
-        activeFile = null;
-        document.getElementById('file-upload-input').value = '';
-        previewBox.classList.add('hidden');
-        updateSendButtonState();
-    }
     function updateSendButtonState() {
         const hasText = chatInput.value.trim().length > 0;
         if(hasText || activeFile) {
-            sendBtn.classList.remove('bg-gray-300');
-            sendBtn.classList.add('bg-black', 'text-white');
+            sendBtn.classList.remove('disabled');
         } else {
-            sendBtn.classList.remove('bg-black', 'text-white');
-            sendBtn.classList.add('bg-gray-300', 'text-white');
+            sendBtn.classList.add('disabled');
         }
         chatInput.style.height = 'auto';
         chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
@@ -700,7 +2355,7 @@
             <div class="w-14 h-14 mb-3 rounded-full overflow-hidden shadow-md flex items-center justify-center logo-pulse">
                 <img src="public/worm.png" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/56x56?text=🐛'">
             </div>
-            <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.5 is a powerful and ruthless Al chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
+            <p id="greeting-text" class="text-rose-600 font-medium text-center max-w-[280px] leading-relaxed text-[15px]">🤖 HeaNg[Black-Cyber] (Free) V1.6 is a powerful and ruthless Al chatbot designed to assist hackers 🎭 with their hacking and programming. ☠️ And Generate Images.<br><span class="text-gray-400 text-sm">How can I help you today?</span></p>
         </div>`;
         renderRecentList();
         showToast("New session", false);
@@ -715,8 +2370,21 @@
         chatContainer.innerHTML = '';
         const filtered = conversationHistory.filter(m => m.role !== 'system');
         for(const msg of filtered) {
-            if(msg.role === 'user') appendMessage(msg.content, true, msg.file || null);
-            else if(msg.role === 'assistant') { const bubble = appendMessage('', false); bubble.innerHTML = formatCodeBlocks(msg.content); attachCopyEvents(); }
+            if(msg.role === 'user') {
+                let refImage = null;
+                if (msg.referenceImage) {
+                    refImage = msg.referenceImage;
+                }
+                appendMessage(msg.content, true, msg.file || null, false, null, refImage);
+            } else if(msg.role === 'assistant') {
+                if(msg.imageUrl) {
+                    const bubble = appendMessage('', false, null, true, msg.imageUrl);
+                } else {
+                    const bubble = appendMessage('', false);
+                    bubble.innerHTML = formatCodeBlocks(msg.content);
+                    attachCopyEvents();
+                }
+            }
         }
         if(filtered.length === 0) createNewChatSession();
         renderRecentList();
@@ -725,7 +2393,7 @@
     
     function deleteSession(id) {
         allSessions = allSessions.filter(s => s.id !== id);
-        localStorage.setItem('heang_sessions', JSON.stringify(allSessions));
+        saveSessionsToStorage(allSessions);
         if(currentSessionId === id) {
             if(allSessions.length) loadSession(allSessions[0].id);
             else createNewChatSession();
@@ -740,14 +2408,14 @@
         if(!filtered.length) { recentContainer.innerHTML = '<div class="text-gray-400 italic text-xs px-2">No chats found</div>'; return; }
         filtered.forEach(sess => {
             const div = document.createElement('div');
-            div.className = `Channel flex justify-between items-center px-3 py-2 rounded-xl cursor-pointer transition ${currentSessionId === sess.id ? (isDark ? 'bg-zinc-800 text-rose-300' : 'bg-rose-50 text-rose-600') : (isDark ? 'text-gray-300 hover:bg-zinc-800/60' : 'text-gray-700 hover:bg-gray-100')}`;
+            div.className = `flex justify-between items-center px-3 py-2 rounded-xl cursor-pointer transition ${currentSessionId === sess.id ? (isDark ? 'bg-zinc-800 text-rose-300' : 'bg-rose-50 text-rose-600') : (isDark ? 'text-gray-300 hover:bg-zinc-800/60' : 'text-gray-700 hover:bg-gray-100')}`;
             const titleSpan = document.createElement('span');
             titleSpan.className = 'truncate flex-1 text-sm font-medium';
             titleSpan.textContent = sess.title || 'Untitled chat';
             titleSpan.onclick = () => { loadSession(sess.id); if(window.innerWidth<1024) toggleSidebar(); };
             const delBtn = document.createElement('button');
             delBtn.innerHTML = '<i class="fa-regular fa-trash-can text-xs"></i>';
-            delBtn.className = 'text-gray-400 hover:text-red-500 opacity-0 Channel-hover:opacity-100 transition p-1';
+            delBtn.className = 'text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition p-1';
             delBtn.onclick = (e) => { e.stopPropagation(); deleteSession(sess.id); };
             div.appendChild(titleSpan);
             div.appendChild(delBtn);
@@ -757,14 +2425,13 @@
     function filterChats() { renderRecentList(); }
     function toggleSidebar() { if(window.innerWidth >= 1024) return; document.getElementById('sidebar').classList.toggle('open'); document.getElementById('backdrop').classList.toggle('hidden'); }
     function clearAllChats() { allSessions = []; conversationHistory = []; localStorage.removeItem('heang_sessions'); localStorage.removeItem('heang_session_id'); createNewChatSession(); showToast("All history erased", false); }
+    function clearUploadedFile() { activeFile = null; }
     
     function toggleDarkMode() {
         isDark = !isDark;
         localStorage.setItem('heang_dark', isDark);
         if(isDark) { document.body.classList.add('dark'); document.getElementById('sidebar').style.background = '#18181b'; 
-            document.getElementById('menu-title')?.classList.replace('text-gray-800', 'text-gray-100'); document.getElementById('sidebar-search')?.classList.add('bg-zinc-800', 'text-gray-200'); document.getElementById('new-chat-btn')?.classList.replace('bg-black', 'bg-zinc-800'); document.getElementById('api-badge')?.classList.replace('bg-black', 'bg-zinc-700'); document.getElementById('main-container').style.background = '#18181b'; document.getElementById('chatContainer').classList.replace('bg-gray-50', 'bg-[#09090b]'); document.querySelector('header')?.classList.add('bg-[#18181b]', 'border-b-zinc-800'); document.getElementById('header-title')?.classList.replace('text-gray-900', 'text-gray-100'); document.getElementById('version-badge')?.classList.replace('bg-gray-100', 'bg-zinc-800'); 
-            document.querySelector('footer')?.classList.add('bg-[#18181b]', 'border-t-zinc-800'); document.getElementById('input-bar')?.classList.replace('bg-gray-100', 'bg-zinc-800'); chatInput.classList.replace('text-gray-800', 'text-gray-200'); 
-            document.querySelectorAll('.tag-btn').forEach(btn => { if(btn) { btn.classList.replace('bg-gray-100', 'bg-zinc-800'); btn.classList.replace('text-gray-800', 'text-gray-300'); btn.classList.replace('hover:bg-gray-200', 'hover:bg-zinc-700'); } });
+            document.getElementById('menu-title')?.classList.replace('text-gray-800', 'text-gray-100'); document.getElementById('sidebar-search')?.classList.add('bg-zinc-800', 'text-gray-200'); document.getElementById('new-chat-btn')?.classList.replace('bg-black', 'bg-zinc-800'); document.getElementById('main-container').style.background = '#18181b'; document.getElementById('chatContainer').classList.replace('bg-gray-50', 'bg-[#09090b]'); document.querySelector('header')?.classList.add('bg-[#18181b]', 'border-b-zinc-800'); document.getElementById('header-title')?.classList.replace('text-gray-900', 'text-gray-100'); document.getElementById('version-badge')?.classList.replace('bg-gray-100', 'bg-zinc-800'); document.querySelector('footer')?.classList.add('bg-[#18181b]', 'border-t-zinc-800'); document.getElementById('input-bar')?.classList.replace('bg-gray-100', 'bg-zinc-800'); chatInput.classList.replace('text-gray-800', 'text-gray-200'); 
             document.getElementById('toggle-switch-bg').classList.add('bg-rose-500'); document.getElementById('toggle-switch-circle').style.transform = 'translateX(16px)'; document.getElementById('mode-icon').className = 'fa-solid fa-moon'; document.getElementById('mode-text').innerText = 'Light mode'; } 
         else { location.reload(); }
     }
@@ -773,32 +2440,49 @@
     
     (async function boot() {
         await fetchSystemPrompt();
+        try {
+            await openDatabase();
+            await updateImageCountBadge();
+            console.log('IndexedDB ready!');
+        } catch(e) {
+            console.warn('IndexedDB not available:', e);
+        }
+        
         if(!currentSessionId || !allSessions.find(s=>s.id===currentSessionId)) createNewChatSession();
         else loadSession(currentSessionId);
         if(isDark) toggleDarkMode();
         updateSendButtonState();
-        // NEW: Enter key creates new line on all devices (mobile/desktop) - never sends message.
-        // Sending only happens via send button click.
+        updateApiStatusUI();
+        hideControlButtons();
+        
         chatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();  // Prevent form submission or default send
-                const start = chatInput.selectionStart;
-                const end = chatInput.selectionEnd;
-                const value = chatInput.value;
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!isGenerationActive) {
+                    sendMessage();
+                }
+            }
+            if (e.key === 'Enter' && e.shiftKey) {
+                const start = chatInput.selectionStart, end = chatInput.selectionEnd, value = chatInput.value;
                 chatInput.value = value.substring(0, start) + '\n' + value.substring(end);
                 chatInput.selectionStart = chatInput.selectionEnd = start + 1;
-                // Trigger auto-resize
                 updateSendButtonState();
-                // Force scroll inside textarea if needed (mobile friendly)
-                setTimeout(() => {
-                    chatInput.scrollTop = chatInput.scrollHeight;
-                }, 0);
+                setTimeout(() => chatInput.scrollTop = chatInput.scrollHeight, 0);
             }
         });
         chatInput.addEventListener('input', updateSendButtonState);
         chatInput.addEventListener('focus', () => { setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey && e.key === 'g') {
+                e.preventDefault();
+                generateImage();
+            }
+            if (e.key === 'Escape' && isGenerationActive) {
+                stopGeneration();
+            }
+        });
     })();
 </script>
 </body>
 </html>
-```
