@@ -2456,20 +2456,29 @@
         hideControlButtons();
         
         chatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if (!isGenerationActive) {
-                    sendMessage();
-                }
-            }
-            if (e.key === 'Enter' && e.shiftKey) {
-                const start = chatInput.selectionStart, end = chatInput.selectionEnd, value = chatInput.value;
-                chatInput.value = value.substring(0, start) + '\n' + value.substring(end);
-                chatInput.selectionStart = chatInput.selectionEnd = start + 1;
+            // Enter key: always insert newline (natural line break)
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Prevent default form submission / newline weirdness
+                
+                // Get cursor position and insert newline
+                const start = chatInput.selectionStart;
+                const end = chatInput.selectionEnd;
+                const value = chatInput.value;
+                
+                // Insert newline at cursor position
+                const newValue = value.substring(0, start) + '\n' + value.substring(end);
+                chatInput.value = newValue;
+                
+                // Move cursor after the inserted newline
+                const newCursorPos = start + 1;
+                chatInput.selectionStart = chatInput.selectionEnd = newCursorPos;
+                
+                // Update height and scroll
                 updateSendButtonState();
                 setTimeout(() => chatInput.scrollTop = chatInput.scrollHeight, 0);
             }
         });
+        
         chatInput.addEventListener('input', updateSendButtonState);
         chatInput.addEventListener('focus', () => { setTimeout(() => chatInput.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50); });
         
